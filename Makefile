@@ -1,6 +1,10 @@
 APPNAME = rocks
 VERSION = 0.1.0-dev
 
+setup:
+	go get -tags=embed github.com/tecbot/gorocksdb
+	glide install
+
 build-all: build-mac build-linux
 
 build:
@@ -21,10 +25,6 @@ all:
 	setup
 	build
 	install
-
-mocks:
-	mockery -name=Scalar -recursive -inpkg
-	mockery -name=Executor -recursive -inpkg
 
 test:
 	go test -v github.com/ind9/rocks
