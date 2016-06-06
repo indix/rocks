@@ -2,8 +2,10 @@ package ops
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/spf13/cobra"
+	"github.com/tecbot/gorocksdb"
 )
 
 var source string
@@ -29,8 +31,13 @@ func restoreDatabase(args []string) error {
 		walDestinationDir = destination
 	}
 
-	fmt.Printf("Source=%s, Dest=%s, WAL Dest=%s\n", source, destination, walDestinationDir)
-	return nil
+	log.Printf("Trying to restore backup from %s to %s and WAL is going to %s\n", source, destination, walDestinationDir)
+	opts := gorocksdb.NewDefaultOptions()
+	db, err := gorocksdb.OpenBackupEngine(opts, source)
+	if err != nil {
+		return err
+	}
+	return db.RestoreDBFromLatestBackup(destination, walDestinationDir, gorocksdb.NewRestoreOptions())
 }
 
 func init() {
@@ -38,5 +45,5 @@ func init() {
 
 	restore.PersistentFlags().StringVar(&source, "src", "", "Restore from")
 	restore.PersistentFlags().StringVar(&destination, "dest", "", "Restore to")
-	restore.PersistentFlags().StringVar(&walDestinationDir, "wal-dest", "", "Restore WAL to (generally same as --dest)")
+	restore.PersistentFlags().StringVar(&walDestinationDir, "wal", "", "Restore WAL to (generally same as --dest)")
 }
