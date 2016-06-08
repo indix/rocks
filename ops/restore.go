@@ -32,6 +32,11 @@ func restoreDatabase(args []string) error {
 	}
 
 	log.Printf("Trying to restore backup from %s to %s and WAL is going to %s\n", source, destination, walDestinationDir)
+	return DoRestore(source, destination, walDestinationDir)
+}
+
+// DoRestore triggers a restore from the specified backup location
+func DoRestore(source, destination, walDestinationDir string) error {
 	opts := gorocksdb.NewDefaultOptions()
 	db, err := gorocksdb.OpenBackupEngine(opts, source)
 	if err != nil {
