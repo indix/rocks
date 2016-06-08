@@ -12,6 +12,7 @@ if [ "${SNAP_CI}x" == "truex" ]; then
   mkdir -p build/
   pushd build
   if [ ! -d rocksdb-${ROCKSB_VERSION} ]; then
+    sudo apt-get install -y libsnappy-dev
     wget --continue https://github.com/facebook/rocksdb/archive/v${ROCKSB_VERSION}.tar.gz
     tar xzvf v${ROCKSB_VERSION}.tar.gz
     pushd rocksdb-${ROCKSB_VERSION}
