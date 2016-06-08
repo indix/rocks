@@ -22,4 +22,4 @@ if [ "${SNAP_CI}x" == "truex" ]; then
   popd
 fi
 
-CGO_CFLAGS="-I${BASE}/build/rocksdb-${ROCKSB_VERSION}/include" CGO_LDFLAGS="-L${BASE}/build/rocksdb-${ROCKSB_VERSION} -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy" go build -o ${APPNAME} .
+CGO_CFLAGS="-I${BASE}/build/rocksdb-${ROCKSB_VERSION}/include" CGO_LDFLAGS="-L${BASE}/build/rocksdb-${ROCKSB_VERSION} -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy" go build -o rocks .
