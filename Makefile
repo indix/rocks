@@ -16,8 +16,7 @@ build-mac:
 	GOOS=darwin GOARCH=amd64 go build -ldflags "-s -X main.Version=${VERSION}" -v -o ${APPNAME}-darwin-amd64 .
 
 build-ci:
-	bin/ci-bootstrap.sh
-	CGO_CFLAGS="-I${BASE}/build/include" CGO_LDFLAGS="-L${BASE}/build -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy" go build -o ${APPNAME} .
+	bin/ci-run.sh
 
 clean:
 	rm -f ${APPNAME}
