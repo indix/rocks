@@ -2,3 +2,4 @@ rocks
 rocks-*
 vendor/
 .DS_Store
+build/
