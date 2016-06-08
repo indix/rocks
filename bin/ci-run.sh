@@ -2,7 +2,7 @@
 
 set -e -x
 
-BASE=`dirname $0`/../
+BASE="$( cd "$( dirname "$0" )" && pwd )"
 
 ROCKSB_VERSION="4.1"
 
