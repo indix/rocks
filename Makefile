@@ -28,6 +28,7 @@ all:
 
 test:
 	go test -v github.com/ind9/rocks
+	go test -v github.com/ind9/rocks/ops
 
 test-only:
 	go test -v github.com/ind9/rocks/${name}
