@@ -2,8 +2,6 @@
 
 set -e -x
 
-BASE="$( cd "$( dirname "$0" )"/.. && pwd )"
-
 ROCKSB_VERSION="4.1"
 
 if [ "${SNAP_CI}x" == "truex" ]; then
