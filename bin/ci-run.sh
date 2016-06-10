@@ -7,7 +7,7 @@ BASE="$( cd "$( dirname "$0" )"/.. && pwd )"
 ROCKSB_VERSION="4.1"
 
 if [ "${SNAP_CI}x" == "truex" ]; then
-  cd ${BASE}
+  pushd ${SNAP_CACHE_DIR}
   # Download and extract rocksdb source file
   mkdir -p build/
   pushd build
@@ -20,6 +20,10 @@ if [ "${SNAP_CI}x" == "truex" ]; then
     popd
   fi
   popd
+  popd
 fi
 
-CGO_CFLAGS="-I${BASE}/build/rocksdb-${ROCKSB_VERSION}/include" CGO_LDFLAGS="-L${BASE}/build/rocksdb-${ROCKSB_VERSION} -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy" go build -o rocks .
+export CGO_CFLAGS="-I${SNAP_CACHE_DIR}/build/rocksdb-${ROCKSB_VERSION}/include"
+export CGO_LDFLAGS="-L${SNAP_CACHE_DIR}/build/rocksdb-${ROCKSB_VERSION} -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy"
+go build -o rocks .
+make test

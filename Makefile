@@ -15,7 +15,7 @@ build-linux:
 build-mac:
 	GOOS=darwin GOARCH=amd64 go build -ldflags "-s -X main.Version=${VERSION}" -v -o ${APPNAME}-darwin-amd64 .
 
-build-ci:
+ci:
 	APPNAME=${APPNAME} bin/ci-run.sh
 
 clean:
