@@ -46,7 +46,7 @@ func restoreDatabase(args []string) error {
 }
 
 func walkDir(source, destination, walDestinationDir string) {
-	filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
+	filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
 		if info.Name() == LatestBackup {
 			dbLoc := filepath.Dir(path)
 			dbRelative, err := filepath.Rel(source, dbLoc)
@@ -58,24 +58,26 @@ func walkDir(source, destination, walDestinationDir string) {
 			dbRestoreLoc := filepath.Join(destination, dbRelative)
 			walRestoreLoc := filepath.Join(walDestinationDir, dbRelative)
 			log.Printf("Backup at %s, would be restored to %s with WAL to %s\n", dbLoc, dbRestoreLoc, walRestoreLoc)
-			err = os.MkdirAll(dbRestoreLoc, os.ModePerm)
-			if err != nil {
+
+			if err = os.MkdirAll(dbRestoreLoc, os.ModePerm); err != nil {
 				log.Print(err)
 				return err
 			}
-			err = os.MkdirAll(walRestoreLoc, os.ModePerm)
-			if err != nil {
+
+			if err = os.MkdirAll(walRestoreLoc, os.ModePerm); err != nil {
 				log.Print(err)
 				return err
 			}
-			err = DoRestore(dbLoc, dbRestoreLoc, walRestoreLoc)
-			if err != nil {
+
+			if err = DoRestore(dbLoc, dbRestoreLoc, walRestoreLoc); err != nil {
 				log.Print(err)
 				return err
 			}
+
 			return filepath.SkipDir
 		}
-		return nil
+
+		return walkErr
 	})
 }
 
