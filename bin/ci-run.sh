@@ -12,7 +12,6 @@ if [ "${SNAP_CI}x" == "truex" ]; then
   mkdir -p build/
   pushd build
   if [ ! -d rocksdb-${ROCKSB_VERSION} ]; then
-    sudo apt-get install -y libsnappy-dev
     wget --continue https://github.com/facebook/rocksdb/archive/v${ROCKSB_VERSION}.tar.gz
     tar xzvf v${ROCKSB_VERSION}.tar.gz
     pushd rocksdb-${ROCKSB_VERSION}
@@ -23,6 +22,7 @@ if [ "${SNAP_CI}x" == "truex" ]; then
   popd
 fi
 
+sudo apt-get install -y libsnappy-dev
 export CGO_CFLAGS="-I${SNAP_CACHE_DIR}/build/rocksdb-${ROCKSB_VERSION}/include"
 export CGO_LDFLAGS="-L${SNAP_CACHE_DIR}/build/rocksdb-${ROCKSB_VERSION} -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy"
 
