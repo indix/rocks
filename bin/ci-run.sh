@@ -25,5 +25,6 @@ fi
 
 export CGO_CFLAGS="-I${SNAP_CACHE_DIR}/build/rocksdb-${ROCKSB_VERSION}/include"
 export CGO_LDFLAGS="-L${SNAP_CACHE_DIR}/build/rocksdb-${ROCKSB_VERSION} -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy"
-go build -o rocks .
+
+make build
 make test
