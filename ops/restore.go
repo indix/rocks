@@ -3,6 +3,8 @@ package ops
 import (
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/tecbot/gorocksdb"
@@ -11,6 +13,10 @@ import (
 var source string
 var destination string
 var walDestinationDir string // generally the same as destination
+var recursive bool
+
+// LatestBackup is the file at which terminate recursive lookups
+const LatestBackup = "LATEST_BACKUP"
 
 var restore = &cobra.Command{
 	Use:   "restore",
@@ -31,8 +37,46 @@ func restoreDatabase(args []string) error {
 		walDestinationDir = destination
 	}
 
+	if recursive {
+		walkDir(source, destination, walDestinationDir)
+		return nil
+	}
 	log.Printf("Trying to restore backup from %s to %s and WAL is going to %s\n", source, destination, walDestinationDir)
 	return DoRestore(source, destination, walDestinationDir)
+}
+
+func walkDir(source, destination, walDestinationDir string) {
+	filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
+		if info.Name() == LatestBackup {
+			dbLoc := filepath.Dir(path)
+			dbRelative, err := filepath.Rel(source, dbLoc)
+			if err != nil {
+				log.Print(err)
+				return err
+			}
+
+			dbRestoreLoc := filepath.Join(destination, dbRelative)
+			walRestoreLoc := filepath.Join(walDestinationDir, dbRelative)
+			log.Printf("Backup at %s, would be restored to %s with WAL to %s\n", dbLoc, dbRestoreLoc, walRestoreLoc)
+			err = os.MkdirAll(dbRestoreLoc, os.ModePerm)
+			if err != nil {
+				log.Print(err)
+				return err
+			}
+			err = os.MkdirAll(walRestoreLoc, os.ModePerm)
+			if err != nil {
+				log.Print(err)
+				return err
+			}
+			err = DoRestore(dbLoc, dbRestoreLoc, walRestoreLoc)
+			if err != nil {
+				log.Print(err)
+				return err
+			}
+			return filepath.SkipDir
+		}
+		return nil
+	})
 }
 
 // DoRestore triggers a restore from the specified backup location
@@ -51,4 +95,5 @@ func init() {
 	restore.PersistentFlags().StringVar(&source, "src", "", "Restore from")
 	restore.PersistentFlags().StringVar(&destination, "dest", "", "Restore to")
 	restore.PersistentFlags().StringVar(&walDestinationDir, "wal", "", "Restore WAL to (generally same as --dest)")
+	restore.PersistentFlags().BoolVar(&recursive, "recursive", false, "Trying restoring in recursive fashion from src to dest")
 }
