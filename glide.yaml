@@ -7,3 +7,4 @@ import:
 - package: github.com/spf13/cobra
 - package: github.com/vektra/mockery
 - package: github.com/tecbot/gorocksdb
+- package: github.com/hashicorp/go-multierror

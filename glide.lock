@@ -1,12 +1,16 @@
-hash: 50768be65af5e7f4461edf861ad26a351a9f987f922673fbe1ec68e1b547a0ae
-updated: 2016-06-04T12:47:16.053050339+05:30
+hash: 53557c1689a15c59f000ff3339d9884359c60da5309d70912a5321fac89b4cdf
+updated: 2016-06-10T21:51:21.457821209+05:30
 imports:
 - name: github.com/davecgh/go-spew
   version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
   subpackages:
   - spew
+- name: github.com/hashicorp/errwrap
+  version: 7554cd9344cec97297fa6649b055a8c98c2a1e55
+- name: github.com/hashicorp/go-multierror
+  version: d30f09973e19c1dfcd120b2d9c4f168e68d6b5d5
 - name: github.com/ind9/rocks
-  version: 9e35acd3cbe2554d29b27ee079cdb04597c964ab
+  version: 7edd161312bf870c47cb1c5c6717298a548732d7
   subpackages:
   - ops
 - name: github.com/pmezard/go-difflib
