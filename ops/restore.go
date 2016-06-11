@@ -14,6 +14,7 @@ var source string
 var destination string
 var walDestinationDir string // generally the same as destination
 var recursive bool
+var keepLogFiles bool
 
 // LatestBackup is the file at which terminate recursive lookups
 const LatestBackup = "LATEST_BACKUP"
@@ -88,7 +89,12 @@ func DoRestore(source, destination, walDestinationDir string) error {
 	if err != nil {
 		return err
 	}
-	return db.RestoreDBFromLatestBackup(destination, walDestinationDir, gorocksdb.NewRestoreOptions())
+
+	restoreOpts := gorocksdb.NewRestoreOptions()
+	if keepLogFiles {
+		restoreOpts.SetKeepLogFiles(1)
+	}
+	return db.RestoreDBFromLatestBackup(destination, walDestinationDir, restoreOpts)
 }
 
 func init() {
@@ -98,4 +104,5 @@ func init() {
 	restore.PersistentFlags().StringVar(&destination, "dest", "", "Restore to")
 	restore.PersistentFlags().StringVar(&walDestinationDir, "wal", "", "Restore WAL to (generally same as --dest)")
 	restore.PersistentFlags().BoolVar(&recursive, "recursive", false, "Trying restoring in recursive fashion from src to dest")
+	restore.PersistentFlags().BoolVar(&keepLogFiles, "keep-log-files", false, "If true, restore won't overwrite the existing log files in wal_dir")
 }
