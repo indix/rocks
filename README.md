@@ -28,10 +28,11 @@ Usage:
   rocks restore [flags]
 
 Flags:
-      --dest string   Restore to
-      --recursive     Trying restoring in recursive fashion from src to dest
-      --src string    Restore from
-      --wal string    Restore WAL to (generally same as --dest)
+      --dest string      Restore to
+      --keep-log-files   If true, restore won't overwrite the existing log files in wal_dir
+      --recursive        Trying restoring in recursive fashion from src to dest
+      --src string       Restore from
+      --wal string       Restore WAL to (generally same as --dest)
 ```
 
 ## License
