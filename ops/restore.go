@@ -38,14 +38,14 @@ func restoreDatabase(args []string) error {
 	}
 
 	if recursive {
-		walkDir(source, destination, walDestinationDir)
+		walkBackupDir(source, destination, walDestinationDir)
 		return nil
 	}
 	log.Printf("Trying to restore backup from %s to %s and WAL is going to %s\n", source, destination, walDestinationDir)
 	return DoRestore(source, destination, walDestinationDir)
 }
 
-func walkDir(source, destination, walDestinationDir string) {
+func walkBackupDir(source, destination, walDestinationDir string) {
 	filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
 		if info.Name() == LatestBackup {
 			dbLoc := filepath.Dir(path)
