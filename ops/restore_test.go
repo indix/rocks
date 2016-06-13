@@ -16,11 +16,11 @@ func TestRestore(t *testing.T) {
 	restoreDir, err := ioutil.TempDir("", "ind9-rocks-restore")
 	defer os.RemoveAll(restoreDir)
 	assert.NoError(t, err)
-	dir, err := ioutil.TempDir("", "ind9-rocks")
-	defer os.RemoveAll(dir)
+	dataDir, err := ioutil.TempDir("", "ind9-rocks")
+	defer os.RemoveAll(dataDir)
 	assert.NoError(t, err)
 
-	db := createDummyDB(t, dir)
+	db := createDummyDB(t, dataDir)
 	doBackup(t, backupDir, db)
 	db.Close()
 
