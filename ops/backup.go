@@ -10,7 +10,7 @@ import (
 	"github.com/tecbot/gorocksdb"
 )
 
-// Current is the file which terminates recursive loops
+// Current is to identify a rocksdb store.
 const Current = "CURRENT"
 
 var backup = &cobra.Command{
