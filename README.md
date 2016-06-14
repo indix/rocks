@@ -15,6 +15,7 @@ Usage:
 
 Available Commands:
   restore     Restore backed up rocksdb files
+  backup      Backup rocksdb files
 
 Use "rocks [command] --help" for more information about a command.
 ```
@@ -33,6 +34,20 @@ Flags:
       --recursive        Trying restoring in recursive fashion from src to dest
       --src string       Restore from
       --wal string       Restore WAL to (generally same as --dest)
+```
+
+### Backup
+```
+$ rocks backup --help
+Backs up rocksdb files
+
+Usage:
+  rocks backup [flags]
+
+Flags:
+      --dest string      Backup to
+      --recursive        Trying to backup in recursive fashion from src to dest
+      --src string       Backup from
 ```
 
 ## License
