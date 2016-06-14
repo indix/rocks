@@ -2,7 +2,6 @@ package ops
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -11,11 +10,8 @@ import (
 	"github.com/tecbot/gorocksdb"
 )
 
-// MpidIndexDb is one of the rocksdb stores
-const MpidIndexDb = "mpid_index_db"
-
-// StoreDb is one of the rocksdb stores
-const StoreDb = "store_db"
+// Current is the file which terminates recursive loops
+const Current = "CURRENT"
 
 var backup = &cobra.Command{
 	Use:   "backup",
@@ -41,17 +37,18 @@ func backupDatabase(args []string) error {
 
 func walkSourceDir(source, destination string) {
 	filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
-		if info.Name() == MpidIndexDb || info.Name() == StoreDb {
+
+		if info.Name() == Current {
 			dbLoc := filepath.Dir(path)
+			dbBackupLoc := filepath.Join(destination, dbLoc)
+			log.Printf("Backup at %s, would be stored to %s\n", dbLoc, dbBackupLoc)
+
 			dbRelative, err := filepath.Rel(source, dbLoc)
 			if err != nil {
 				log.Print(err)
 				return err
 			}
-
-			dbBackupLoc := filepath.Join(destination, dbRelative)
-			log.Printf("Backup at %s, would be stored to %s\n", dbLoc, dbBackupLoc)
-
+			log.Printf("Backup is created for %s rocks store", dbRelative)
 			if err = os.MkdirAll(dbBackupLoc, os.ModePerm); err != nil {
 				log.Print(err)
 				return err
@@ -61,7 +58,6 @@ func walkSourceDir(source, destination string) {
 				log.Print(err)
 				return err
 			}
-
 			return filepath.SkipDir
 		}
 		return walkErr
@@ -70,28 +66,18 @@ func walkSourceDir(source, destination string) {
 
 // DoBackup triggers a backup from the source
 func DoBackup(source, destination string) error {
-	files, err := ioutil.ReadDir(source)
+
+	opts := gorocksdb.NewDefaultOptions()
+	db, err := gorocksdb.OpenDb(opts, source)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	for _, file := range files {
-		name := file.Name()
-
-		if (name != MpidIndexDb) && (name != StoreDb) {
-			continue
-		}
-
-		opts := gorocksdb.NewDefaultOptions()
-		rocksdb, err := gorocksdb.OpenDb(opts, filepath.Join(source, name))
-		db, err := gorocksdb.OpenBackupEngine(opts, destination)
-
-		if err != nil {
-			return err
-		}
-		db.CreateNewBackup(rocksdb)
+	backup, err := gorocksdb.OpenBackupEngine(opts, destination)
+	if err != nil {
+		return err
 	}
-	return nil
+	return backup.CreateNewBackup(db)
 }
 
 func init() {
