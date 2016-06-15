@@ -32,7 +32,9 @@ func backupDatabase(args []string) error {
 		return nil
 	}
 	log.Printf("Trying to create backup from %s to %s\n", source, destination)
-	return DoBackup(source, destination)
+	err := DoBackup(source, destination)
+	log.Printf("Backup from %s to %s completed\n", source, destination)
+	return err
 }
 
 func walkSourceDir(source, destination string) {
@@ -40,15 +42,16 @@ func walkSourceDir(source, destination string) {
 
 		if info.Name() == Current {
 			dbLoc := filepath.Dir(path)
-			dbBackupLoc := filepath.Join(destination, dbLoc)
-			log.Printf("Backup at %s, would be stored to %s\n", dbLoc, dbBackupLoc)
-
 			dbRelative, err := filepath.Rel(source, dbLoc)
 			if err != nil {
 				log.Print(err)
 				return err
 			}
-			log.Printf("Backup is created for %s rocks store", dbRelative)
+
+			dbBackupLoc := filepath.Join(destination, dbRelative)
+			log.Printf("Backup at %s, would be stored to %s\n", dbLoc, dbBackupLoc)
+
+			log.Printf("Backup is created for %s rocks store", dbBackupLoc)
 			if err = os.MkdirAll(dbBackupLoc, os.ModePerm); err != nil {
 				log.Print(err)
 				return err
