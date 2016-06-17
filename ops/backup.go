@@ -51,7 +51,6 @@ func walkSourceDir(source, destination string) error {
 			dbBackupLoc := filepath.Join(destination, dbRelative)
 			log.Printf("Backup at %s, would be stored to %s\n", dbLoc, dbBackupLoc)
 			log.Printf("Backup is created for %s rocks store", dbRelative)
-			log.Printf("Backup is created for %s rocks store", dbBackupLoc)
 
 			if err = os.MkdirAll(dbBackupLoc, os.ModePerm); err != nil {
 				log.Print(err)
