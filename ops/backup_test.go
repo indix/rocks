@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/tecbot/gorocksdb"
 )
 
 func TestBackup(t *testing.T) {
@@ -18,7 +19,10 @@ func TestBackup(t *testing.T) {
 	defer os.RemoveAll(backupDir)
 	assert.NoError(t, err)
 
-	db := createDummyDB(t, dataDir)
+	db := openDB(t, dataDir)
+	wo := gorocksdb.NewDefaultWriteOptions()
+	db.Put(wo, []byte("foo1"), []byte("bar"))
+	db.Put(wo, []byte("foo2"), []byte("bar"))
 	db.Close()
 	err = DoBackup(dataDir, backupDir)
 	assert.NoError(t, err)
@@ -56,7 +60,10 @@ func TestRecursiveBackup(t *testing.T) {
 	for _, relLocation := range paths {
 		err = os.MkdirAll(filepath.Join(baseDataDir, relLocation), os.ModePerm)
 		assert.NoError(t, err)
-		db := createDummyDB(t, filepath.Join(baseDataDir, relLocation))
+		db := openDB(t, filepath.Join(baseDataDir, relLocation))
+		wo := gorocksdb.NewDefaultWriteOptions()
+		db.Put(wo, []byte("foo1"), []byte("bar"))
+		db.Put(wo, []byte("foo2"), []byte("bar"))
 		db.Close()
 	}
 
