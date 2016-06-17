@@ -16,7 +16,7 @@ var walDestinationDir string // generally the same as destination
 var recursive bool
 var keepLogFiles bool
 
-// LatestBackup is the file at which terminate recursive lookups
+// LatestBackup is used to find the backup location
 const LatestBackup = "LATEST_BACKUP"
 
 var restore = &cobra.Command{
@@ -42,7 +42,6 @@ func restoreDatabase(args []string) error {
 		walkBackupDir(source, destination, walDestinationDir)
 		return nil
 	}
-	log.Printf("Trying to restore backup from %s to %s and WAL is going to %s\n", source, destination, walDestinationDir)
 	return DoRestore(source, destination, walDestinationDir)
 }
 
@@ -58,7 +57,6 @@ func walkBackupDir(source, destination, walDestinationDir string) {
 
 			dbRestoreLoc := filepath.Join(destination, dbRelative)
 			walRestoreLoc := filepath.Join(walDestinationDir, dbRelative)
-			log.Printf("Backup at %s, would be restored to %s with WAL to %s\n", dbLoc, dbRestoreLoc, walRestoreLoc)
 
 			if err = os.MkdirAll(dbRestoreLoc, os.ModePerm); err != nil {
 				log.Print(err)
@@ -84,6 +82,8 @@ func walkBackupDir(source, destination, walDestinationDir string) {
 
 // DoRestore triggers a restore from the specified backup location
 func DoRestore(source, destination, walDestinationDir string) error {
+	log.Printf("Trying to restore backup from %s to %s and WAL is going to %s\n", source, destination, walDestinationDir)
+
 	opts := gorocksdb.NewDefaultOptions()
 	db, err := gorocksdb.OpenBackupEngine(opts, source)
 	if err != nil {
@@ -94,7 +94,9 @@ func DoRestore(source, destination, walDestinationDir string) error {
 	if keepLogFiles {
 		restoreOpts.SetKeepLogFiles(1)
 	}
-	return db.RestoreDBFromLatestBackup(destination, walDestinationDir, restoreOpts)
+	err = db.RestoreDBFromLatestBackup(destination, walDestinationDir, restoreOpts)
+	log.Printf("Restore complete from %s to %s and WAL went into %s\n", source, destination, walDestinationDir)
+	return err
 }
 
 func init() {
