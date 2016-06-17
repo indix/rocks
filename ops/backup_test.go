@@ -34,3 +34,36 @@ func Exists(name string) bool {
 	}
 	return true
 }
+
+func TestRecursiveBackup(t *testing.T) {
+	baseDataDir, err := ioutil.TempDir("", "baseDataDir")
+	err = os.MkdirAll(baseDataDir, os.ModePerm)
+	defer os.RemoveAll(baseDataDir)
+	assert.NoError(t, err)
+
+	baseBackupDir, err := ioutil.TempDir("", "baseBackupDir")
+	err = os.MkdirAll(baseBackupDir, os.ModePerm)
+	defer os.RemoveAll(baseBackupDir)
+	assert.NoError(t, err)
+
+	paths := []string{
+		"1/store_1/",
+		"1/store_2/",
+		"2/store_1/",
+		"2/store_2/",
+	}
+
+	for _, relLocation := range paths {
+		err = os.MkdirAll(filepath.Join(baseDataDir, relLocation), os.ModePerm)
+		assert.NoError(t, err)
+		db := createDummyDB(t, filepath.Join(baseDataDir, relLocation))
+		db.Close()
+	}
+
+	err = walkSourceDir(baseDataDir, baseBackupDir)
+	assert.NoError(t, err)
+
+	for _, relLocation := range paths {
+		assert.True(t, Exists(filepath.Join(baseBackupDir, relLocation, LatestBackup)))
+	}
+}
