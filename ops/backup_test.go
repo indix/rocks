@@ -1,6 +1,7 @@
 package ops
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -35,22 +36,40 @@ func Exists(name string) bool {
 	return true
 }
 
+func Visit(path string, f os.FileInfo, err error) error {
+	fmt.Printf("Visited: %s\n", path)
+	return nil
+}
+
 func TestRecursiveBackup(t *testing.T) {
-
-	dataDir, err := ioutil.TempDir("", "ind9-rocks")
-	defer os.RemoveAll(dataDir)
+	baseDataDir, err := ioutil.TempDir("", "baseDataDir")
+	err = os.MkdirAll(baseDataDir, os.ModePerm)
+	defer os.RemoveAll(baseDataDir)
 	assert.NoError(t, err)
 
-	backupDir, err := ioutil.TempDir("", "ind9-rocks-backup")
-	defer os.RemoveAll(backupDir)
+	baseBackupDir, err := ioutil.TempDir("", "baseBackupDir")
+	err = os.MkdirAll(baseBackupDir, os.ModePerm)
+	defer os.RemoveAll(baseBackupDir)
 	assert.NoError(t, err)
 
-	db := createDummyDB(t, dataDir)
-	db.Close()
-	err = DoBackup(dataDir, backupDir)
+	paths := []string{
+		"1/store_1/",
+		"1/store_2/",
+		"2/store_1/",
+		"2/store_2/",
+	}
+
+	for _, relLocation := range paths {
+		err = os.MkdirAll(filepath.Join(baseDataDir, relLocation), os.ModePerm)
+		assert.NoError(t, err)
+		db := createDummyDB(t, filepath.Join(baseDataDir, relLocation))
+		db.Close()
+	}
+
+	err = walkSourceDir(baseDataDir, baseBackupDir)
 	assert.NoError(t, err)
 
-	walkSourceDir(dataDir, backupDir)
-
-	assert.True(t, Exists(filepath.Join(backupDir, LatestBackup)))
+	for _, relLocation := range paths {
+		assert.True(t, Exists(filepath.Join(baseBackupDir, relLocation, LatestBackup)))
+	}
 }
