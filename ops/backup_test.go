@@ -1,7 +1,6 @@
 package ops
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -34,11 +33,6 @@ func Exists(name string) bool {
 		}
 	}
 	return true
-}
-
-func Visit(path string, f os.FileInfo, err error) error {
-	fmt.Printf("Visited: %s\n", path)
-	return nil
 }
 
 func TestRecursiveBackup(t *testing.T) {
