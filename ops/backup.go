@@ -28,11 +28,9 @@ func backupDatabase(args []string) error {
 		return fmt.Errorf("--dest was not set")
 	}
 	if recursive {
-		walkSourceDir(source, destination)
-		return nil
+		return walkSourceDir(source, destination)
 	}
-	err := DoBackup(source, destination)
-	return err
+	return DoBackup(source, destination)
 }
 
 func walkSourceDir(source, destination string) error {
