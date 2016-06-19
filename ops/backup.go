@@ -69,9 +69,9 @@ func DoRecordRecursiveBackupTime(source, destination string) error {
 	if err != nil {
 		return err
 	}
-	backuptTime := time.Since(start).Seconds()
+	backupTime := time.Since(start).Seconds()
 
-	log.Printf("Time elapsed to create backup is %f seconds\n", backuptTime)
+	log.Printf("Time elapsed to create backup is %f seconds\n", backupTime)
 	return nil
 }
 
@@ -83,9 +83,9 @@ func DoRecordBackupTime(source, destination string) error {
 	if err != nil {
 		return err
 	}
-	backuptTime := time.Since(start).Seconds()
+	backupTime := time.Since(start).Seconds()
 
-	log.Printf("Time elapsed to create backup is %f seconds\n", backuptTime)
+	log.Printf("Time elapsed to create backup is %f seconds\n", backupTime)
 	return nil
 }
 
