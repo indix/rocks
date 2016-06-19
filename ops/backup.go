@@ -31,6 +31,15 @@ func backupDatabase(args []string) error {
 	if recursive {
 		return walkSourceDir(source, destination)
 	}
+
+	if recursive == true && record == true {
+		return walkSourceDir(source, destination)
+	}
+
+	if recursive == false && record == true {
+		return DoRecordBackupTime(source, destination)
+	}
+
 	return DoBackup(source, destination)
 }
 
@@ -64,7 +73,7 @@ func walkSourceDir(source, destination string) error {
 // DoRecordRecursiveBackupTime returns the time taken to create recursive backup
 func DoRecordRecursiveBackupTime(source, destination string) error {
 	start := time.Now()
-
+	log.Printf("Recording time now . . .")
 	err := walkSourceDir(source, destination)
 	if err != nil {
 		return err
@@ -78,7 +87,7 @@ func DoRecordRecursiveBackupTime(source, destination string) error {
 // DoRecordBackupTime returns the time taken to create backup
 func DoRecordBackupTime(source, destination string) error {
 	start := time.Now()
-
+	log.Printf("Recording time now . . .")
 	err := DoBackup(source, destination)
 	if err != nil {
 		return err

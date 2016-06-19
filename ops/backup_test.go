@@ -73,4 +73,8 @@ func TestRecursiveBackup(t *testing.T) {
 	for _, relLocation := range paths {
 		assert.True(t, Exists(filepath.Join(baseBackupDir, relLocation, LatestBackup)))
 	}
+
+	func TestDoRecordBackupTime(t *testing.T) {
+		
+	}
 }
