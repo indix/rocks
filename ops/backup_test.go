@@ -2,9 +2,11 @@ package ops
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/tecbot/gorocksdb"
@@ -73,8 +75,11 @@ func TestRecursiveBackup(t *testing.T) {
 	for _, relLocation := range paths {
 		assert.True(t, Exists(filepath.Join(baseBackupDir, relLocation, LatestBackup)))
 	}
+}
 
-	func TestDoRecordBackupTime(t *testing.T) {
-		
-	}
+func TestDoRecordBackupTime(t *testing.T) {
+	start := time.Now()
+	log.Printf("This is a test statememt . . .")
+	complete := time.Since(start).Seconds()
+	log.Printf("Time taken to log test statement is %f", complete)
 }
