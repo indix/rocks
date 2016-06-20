@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/tecbot/gorocksdb"
@@ -32,18 +31,11 @@ func backupDatabase(args []string) error {
 		return walkSourceDir(source, destination)
 	}
 
-	if recursive == true && record == true {
-		return walkSourceDir(source, destination)
-	}
-
-	if recursive == false && record == true {
-		return DoRecordBackupTime(source, destination)
-	}
-
 	return DoBackup(source, destination)
 }
 
 func walkSourceDir(source, destination string) error {
+
 	return filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
 
 		if info.Name() == Current {
@@ -70,34 +62,6 @@ func walkSourceDir(source, destination string) error {
 	})
 }
 
-// DoRecordRecursiveBackupTime returns the time taken to create recursive backup
-func DoRecordRecursiveBackupTime(source, destination string) error {
-	start := time.Now()
-	log.Printf("Recording time now . . .")
-	err := walkSourceDir(source, destination)
-	if err != nil {
-		return err
-	}
-	backupTime := time.Since(start).Seconds()
-
-	log.Printf("Time elapsed to create backup is %f seconds\n", backupTime)
-	return nil
-}
-
-// DoRecordBackupTime returns the time taken to create backup
-func DoRecordBackupTime(source, destination string) error {
-	start := time.Now()
-	log.Printf("Recording time now . . .")
-	err := DoBackup(source, destination)
-	if err != nil {
-		return err
-	}
-	backupTime := time.Since(start).Seconds()
-
-	log.Printf("Time elapsed to create backup is %f seconds\n", backupTime)
-	return nil
-}
-
 // DoBackup triggers a backup from the source
 func DoBackup(source, destination string) error {
 	log.Printf("Trying to create backup from %s to %s\n", source, destination)
@@ -113,7 +77,7 @@ func DoBackup(source, destination string) error {
 		return err
 	}
 	err = backup.CreateNewBackup(db)
-	log.Printf("Backup from %s to %s completed\n", source, destination)
+
 	return err
 }
 
@@ -123,5 +87,4 @@ func init() {
 	backup.PersistentFlags().StringVar(&source, "src", "", "Backup from")
 	backup.PersistentFlags().StringVar(&destination, "dest", "", "Backup to")
 	backup.PersistentFlags().BoolVar(&recursive, "recursive", false, "Trying to backup in recursive fashion from src to dest")
-	backup.PersistentFlags().BoolVar(&record, "record", false, "Trying to record time taken to create backup")
 }
