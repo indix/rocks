@@ -30,12 +30,10 @@ func backupDatabase(args []string) error {
 	if recursive {
 		return walkSourceDir(source, destination)
 	}
-
 	return DoBackup(source, destination)
 }
 
 func walkSourceDir(source, destination string) error {
-
 	return filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
 
 		if info.Name() == Current {
@@ -77,7 +75,7 @@ func DoBackup(source, destination string) error {
 		return err
 	}
 	err = backup.CreateNewBackup(db)
-
+	log.Printf("Backup from %s to %s completed\n", source, destination)
 	return err
 }
 
