@@ -14,7 +14,6 @@ var source string
 var destination string
 var walDestinationDir string // generally the same as destination
 var recursive bool
-var record bool
 var keepLogFiles bool
 
 // LatestBackup is used to find the backup location
