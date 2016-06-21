@@ -11,3 +11,6 @@ import:
 - package: github.com/ashwanthkumar/golang-utils
   subpackages:
   - io
+- package: golang.org/x/net
+  subpackages:
+  - http2

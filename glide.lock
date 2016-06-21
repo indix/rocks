@@ -1,5 +1,5 @@
-hash: b337fb77034481498ae930b09dce51f3de690978095fe4b4af82fd5541fbe86c
-updated: 2016-06-22T04:22:07.331822917+05:30
+hash: ebd01ab395536a00f6acc02defc2314ec33de1e706e172ef5eccb946ba03d62c
+updated: 2016-06-22T04:28:01.302546266+05:30
 imports:
 - name: github.com/ashwanthkumar/golang-utils
   version: 8a98288a08fa598080186ef79c197c1bf0801ab2
@@ -33,4 +33,8 @@ imports:
   version: 59ab8def01399fb7ded1c3bff5e3e4cbd14b6348
 - name: github.com/vektra/mockery
   version: 3603a98efa82b3b34d74b22cc3c1a2f961e03b21
+- name: golang.org/x/net
+  version: bc3663df0ac92f928d419e31e0d2af22e683a5a2
+  subpackages:
+  - http2
 devImports: []
