@@ -8,3 +8,6 @@ import:
 - package: github.com/vektra/mockery
 - package: github.com/tecbot/gorocksdb
 - package: github.com/hashicorp/go-multierror
+- package: github.com/ashwanthkumar/golang-utils
+  subpackages:
+  - io
