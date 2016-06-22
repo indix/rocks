@@ -8,4 +8,7 @@ import:
 - package: github.com/vektra/mockery
 - package: github.com/tecbot/gorocksdb
 - package: github.com/hashicorp/go-multierror
+- package: golang.org/x/net
+  subpackages:
+  - http2
 - package: github.com/dustin/go-humanize

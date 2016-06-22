@@ -1,31 +1,40 @@
-hash: 4459fad337ae628bb9a853501111042a7e7595cf680d3abc60de9f9c474f77da
-updated: 2016-06-20T11:52:34.474045346+05:30
+hash: 3349fcf3073f65831f119748aea95a0d7313ab9ed959b4b1b31cb13bf3da5d54
+updated: 2016-06-22T05:06:10.09694913+05:30
 imports:
-- name: github.com/cockroachdb/c-jemalloc
-  version: 6362977a9a1989062dccfa5fe314d6c864e7590c
-- name: github.com/cockroachdb/c-lz4
-  version: 834d3303c9e84b1045bc57c3eb3723ee8cb4d33b
-- name: github.com/cockroachdb/c-rocksdb
-  version: 9dd1f18d3ab20667957cf240724a5d12e660ad42
-- name: github.com/cockroachdb/c-snappy
-  version: d4e7b428fe7fc09e93573df3448567a62df8c9fa
+- name: github.com/davecgh/go-spew
+  version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
+  subpackages:
+  - spew
 - name: github.com/dustin/go-humanize
   version: 499693e27ee0d14ffab67c31ad065fdb3d34ea75
+- name: github.com/hashicorp/errwrap
+  version: 7554cd9344cec97297fa6649b055a8c98c2a1e55
 - name: github.com/hashicorp/go-multierror
   version: d30f09973e19c1dfcd120b2d9c4f168e68d6b5d5
-- name: github.com/inconshreveable/mousetrap
-  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/pmezard/go-difflib
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
+  subpackages:
+  - difflib
 - name: github.com/spf13/cobra
-  version: bc81c21bd0d8be5ba2d6630a505d79d4467566e7
+  version: f447048345b64b3247b29a679a14bd0da12c7f2f
 - name: github.com/spf13/pflag
-  version: 367864438f1b1a3c7db4da06a2f55b144e6784e0
+  version: cb88ea77998c3f024757528e3305022ab50b43be
+- name: github.com/stretchr/objx
+  version: cbeaeb16a013161a98496fad62933b1d21786672
 - name: github.com/stretchr/testify
-  version: d77da356e56a7428ad25149ca77381849a6a5232
+  version: 8d64eb7173c7753d6419fd4a9caf057398611364
   subpackages:
   - mock
   - assert
+  - http
 - name: github.com/tecbot/gorocksdb
   version: 59ab8def01399fb7ded1c3bff5e3e4cbd14b6348
 - name: github.com/vektra/mockery
-  version: 29089e31d888052f69e7a0f547885b3ba85ac55d
+  version: 3603a98efa82b3b34d74b22cc3c1a2f961e03b21
+- name: golang.org/x/net
+  version: bc3663df0ac92f928d419e31e0d2af22e683a5a2
+  subpackages:
+  - http2
+  - http2/hpack
+  - lex/httplex
 devImports: []
