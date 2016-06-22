@@ -7,7 +7,7 @@ setup:
 build-all: build-mac build-linux
 
 build:
-	go build -o ${APPNAME} .
+	go build -ldflags "-s -X main.Version=${VERSION}" -v -o ${APPNAME} .
 
 build-linux:
 	GOOS=linux GOARCH=amd64 go build -ldflags "-s -X main.Version=${VERSION}" -v -o ${APPNAME}-linux-amd64 .
