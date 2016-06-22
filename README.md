@@ -16,6 +16,7 @@ Usage:
 Available Commands:
   restore     Restore backed up rocksdb files
   backup      Backup rocksdb files
+  trigger     Triggers a backup on the remote system
 
 Use "rocks [command] --help" for more information about a command.
 ```
@@ -48,6 +49,22 @@ Flags:
       --dest string      Backup to
       --recursive        Trying to backup in recursive fashion from src to dest
       --src string       Backup from
+```
+
+### Remote Backup Trigger
+```
+$ rocks trigger http --help
+Triggers a backup via HTTP
+
+Usage:
+  rocks trigger http [flags]
+
+Flags:
+  -H, --header value             HTTP Headers that needs to be passed with the request in key=value format (default [])
+      --http2                    Make a HTTP2 request instead of the default HTTP1.1
+  -X, --method string            HTTP Method to invoke on the url (default "GET")
+  -D, --payload string           File contents to be passed as payload in the request. If you're pipeing use "stdin".
+  -k, --skip-ssl-verificatioin   Ignore SSL errors - while connecting to self-signed HTTPS servers
 ```
 
 ## License
