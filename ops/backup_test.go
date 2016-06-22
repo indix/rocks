@@ -1,7 +1,6 @@
 package ops
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -74,14 +73,4 @@ func TestRecursiveBackup(t *testing.T) {
 	for _, relLocation := range paths {
 		assert.True(t, Exists(filepath.Join(baseBackupDir, relLocation, LatestBackup)))
 	}
-}
-
-func testFunction(from string) {
-	for i := 0; i < 3; i++ {
-		fmt.Println(from, ":", i)
-	}
-}
-
-func TestGoRoutine(t *testing.T) {
-
 }
