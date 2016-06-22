@@ -53,16 +53,13 @@ Flags:
 
 ### Remote Backup Trigger
 ```
-$ rocks trigger --help
-Triggers a backup on the remote system
+$ rocks trigger http --help
+Triggers a backup via HTTP
 
 Usage:
-  rocks trigger [command]
+  rocks trigger http [flags]
 
-Available Commands:
-  http     Triggers backup via http
-
-Flags for http command:
+Flags:
   -H, --header value             HTTP Headers that needs to be passed with the request in key=value format (default [])
       --http2                    Make a HTTP2 request instead of the default HTTP1.1
   -X, --method string            HTTP Method to invoke on the url (default "GET")
