@@ -10,9 +10,9 @@ import (
 	"github.com/tecbot/gorocksdb"
 )
 
-var source string
-var destination string
-var walDestinationDir string // generally the same as destination
+var restoreSource string
+var restoreDestination string
+var walDestinationDir string // generally the same as restoreDestination
 var recursive bool
 var keepLogFiles bool
 
@@ -27,21 +27,21 @@ var restore = &cobra.Command{
 }
 
 func restoreDatabase(args []string) error {
-	if source == "" {
+	if restoreSource == "" {
 		return fmt.Errorf("--src was not set")
 	}
-	if destination == "" {
+	if restoreDestination == "" {
 		return fmt.Errorf("--dest was not set")
 	}
 
 	if walDestinationDir == "" {
-		walDestinationDir = destination
+		walDestinationDir = restoreDestination
 	}
 
 	if recursive {
-		return walkBackupDir(source, destination, walDestinationDir)
+		return walkBackupDir(restoreSource, restoreDestination, walDestinationDir)
 	}
-	return DoRestore(source, destination, walDestinationDir)
+	return DoRestore(restoreSource, restoreDestination, walDestinationDir)
 }
 
 func walkBackupDir(source, destination, walDestinationDir string) error {
@@ -101,8 +101,8 @@ func DoRestore(source, destination, walDestinationDir string) error {
 func init() {
 	Rocks.AddCommand(restore)
 
-	restore.PersistentFlags().StringVar(&source, "src", "", "Restore from")
-	restore.PersistentFlags().StringVar(&destination, "dest", "", "Restore to")
+	restore.PersistentFlags().StringVar(&restoreSource, "src", "", "Restore from")
+	restore.PersistentFlags().StringVar(&restoreDestination, "dest", "", "Restore to")
 	restore.PersistentFlags().StringVar(&walDestinationDir, "wal", "", "Restore WAL to (generally same as --dest)")
 	restore.PersistentFlags().BoolVar(&recursive, "recursive", false, "Trying restoring in recursive fashion from src to dest")
 	restore.PersistentFlags().BoolVar(&keepLogFiles, "keep-log-files", false, "If true, restore won't overwrite the existing log files in wal_dir")
