@@ -7,13 +7,13 @@ setup:
 build-all: build-mac build-linux
 
 build:
-	go build -ldflags "-s -X main.Version=${VERSION}" -v -o ${APPNAME} .
+	go build -ldflags "-extldflags '-static' -X main.Version=${VERSION}" -v -o ${APPNAME} .
 
 build-linux:
-	GOOS=linux GOARCH=amd64 go build -ldflags "-s -X main.Version=${VERSION}" -v -o ${APPNAME}-linux-amd64 .
+	GOOS=linux GOARCH=amd64 go build -ldflags "-extldflags '-static' -X main.Version=${VERSION}" -v -o ${APPNAME}-linux-amd64 .
 
 build-mac:
-	GOOS=darwin GOARCH=amd64 go build -ldflags "-s -X main.Version=${VERSION}" -v -o ${APPNAME}-darwin-amd64 .
+	GOOS=darwin GOARCH=amd64 go build -ldflags "-extldflags '-static' -X main.Version=${VERSION}" -v -o ${APPNAME}-darwin-amd64 .
 
 ci:
 	APPNAME=${APPNAME} bin/ci-run.sh
