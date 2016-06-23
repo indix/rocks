@@ -34,15 +34,15 @@ func backupDatabase(args []string) error {
 		return fmt.Errorf("--dest was not set")
 	}
 	if recursive {
-		return walkSourceDir(backupSource, backupDestination)
+		return walkSourceDir(backupSource, backupDestination, backupThreads)
 	}
 	return DoBackup(backupSource, backupDestination)
 }
 
-func walkSourceDir(source, destination string) error {
+func walkSourceDir(source, destination string, threads int) error {
 
 	workerPool := WorkerPool{
-		MaxWorkers: backupThreads,
+		MaxWorkers: threads,
 		Op: func(request WorkRequest) error {
 			log.Printf("Got work %v\n", request)
 			return DoBackup(request.Source, request.Destination)

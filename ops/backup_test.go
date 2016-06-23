@@ -67,7 +67,7 @@ func TestRecursiveBackup(t *testing.T) {
 		db.Close()
 	}
 
-	err = walkSourceDir(baseDataDir, baseBackupDir)
+	err = walkSourceDir(baseDataDir, baseBackupDir, 1)
 	assert.NoError(t, err)
 
 	for _, relLocation := range paths {
