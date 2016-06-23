@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 )
 
@@ -27,8 +26,8 @@ func AttachHandler(handler CommandHandler) func(*cobra.Command, []string) {
 	return func(cmd *cobra.Command, args []string) {
 		start := time.Now()
 		err := handler(args)
-		elapsed := time.Since(start)
-		fmt.Printf("This took  %s\n", humanize.RelTime(start, start.Add(elapsed), "", ""))
+		elapsed := time.Since(start).Seconds()
+		fmt.Printf("This took  %f seconds\n", elapsed)
 		if err != nil {
 			log.Printf("[Error] %s", err.Error())
 			os.Exit(1)
