@@ -1,5 +1,7 @@
 package ops
 
+import "sync"
+
 // WorkRequest struct contains source and destination for backup / restore
 type WorkRequest struct {
 	Source      string
@@ -8,9 +10,10 @@ type WorkRequest struct {
 
 // Worker for now
 type Worker struct {
-	Queue chan WorkRequest
-	Errs  chan error
-	Op    func(WorkRequest) error
+	Queue  chan WorkRequest
+	Errs   chan error
+	Op     func(WorkRequest) error
+	Marker *sync.WaitGroup
 }
 
 // Start a worker
@@ -23,5 +26,6 @@ func (w *Worker) run() {
 		if err := w.Op(work); err != nil {
 			w.Errs <- err
 		}
+		w.Marker.Done()
 	}
 }
