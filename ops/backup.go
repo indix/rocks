@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"sync"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
@@ -41,24 +40,15 @@ func backupDatabase(args []string) error {
 }
 
 func walkSourceDir(source, destination string) error {
-	workQueue := make(chan WorkRequest)
-	errsQueue := make(chan error)
-	var marker sync.WaitGroup
-	var workers []Worker
-	for workerCount := 0; workerCount < backupThreads; workerCount++ {
-		worker := Worker{
-			Queue:  workQueue,
-			Errs:   errsQueue,
-			Marker: &marker,
-			Op: func(request WorkRequest) error {
-				log.Printf("Got work %v\n", request)
-				return DoBackup(request.Source, request.Destination)
-			},
-		}
 
-		worker.Start()
-		workers = append(workers, worker)
+	workerPool := WorkerPool{
+		MaxWorkers: backupThreads,
+		Op: func(request WorkRequest) error {
+			log.Printf("Got work %v\n", request)
+			return DoBackup(request.Source, request.Destination)
+		},
 	}
+	workerPool.Initialize()
 
 	err := filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
 		if info.Name() == Current {
@@ -76,32 +66,26 @@ func walkSourceDir(source, destination string) error {
 				return err
 			}
 
-			workRequest := WorkRequest{
+			work := WorkRequest{
 				Source:      dbLoc,
 				Destination: dbBackupLoc,
 			}
-			workQueue <- workRequest
-			marker.Add(1)
+			workerPool.AddWork(work)
 			return filepath.SkipDir
 		}
 		return walkErr
 	})
-	if err != nil {
-		return err
-	}
-	marker.Wait() // wait for all the items to get processed
-	close(workQueue)
-	close(errsQueue)
-	for _, worker := range workers {
-		worker.Stop()
-	}
 
 	var result error
-	for item := range errsQueue {
-		multierror.Append(result, item)
+	if errFromWorkers := workerPool.Join(); errFromWorkers != nil {
+		multierror.Append(result, errFromWorkers)
 	}
 
-	return err
+	if err != nil {
+		multierror.Append(result, err)
+	}
+
+	return result
 }
 
 // DoBackup triggers a backup from the source
