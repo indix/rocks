@@ -5,12 +5,17 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 	"github.com/tecbot/gorocksdb"
 )
+
+var backupSource string
+var backupDestination string
+var backupThreads int
 
 // Current is to identify a rocksdb store.
 const Current = "CURRENT"
@@ -23,16 +28,16 @@ var backup = &cobra.Command{
 }
 
 func backupDatabase(args []string) error {
-	if source == "" {
+	if backupSource == "" {
 		return fmt.Errorf("--src was not set")
 	}
-	if destination == "" {
+	if backupDestination == "" {
 		return fmt.Errorf("--dest was not set")
 	}
 	if recursive {
-		return walkSourceDir(source, destination)
+		return walkSourceDir(backupSource, backupDestination)
 	}
-	return DoBackup(source, destination)
+	return DoBackup(backupSource, backupDestination)
 }
 
 func walkSourceDir(source, destination string) error {
@@ -40,7 +45,7 @@ func walkSourceDir(source, destination string) error {
 	errsQueue := make(chan error)
 	var marker sync.WaitGroup
 	var workers []Worker
-	for workerCount := 0; workerCount < 5; workerCount++ {
+	for workerCount := 0; workerCount < backupThreads; workerCount++ {
 		worker := Worker{
 			Queue:  workQueue,
 			Errs:   errsQueue,
@@ -121,7 +126,8 @@ func DoBackup(source, destination string) error {
 func init() {
 	Rocks.AddCommand(backup)
 
-	backup.PersistentFlags().StringVar(&source, "src", "", "Backup from")
-	backup.PersistentFlags().StringVar(&destination, "dest", "", "Backup to")
+	backup.PersistentFlags().StringVar(&backupSource, "src", "", "Backup from")
+	backup.PersistentFlags().StringVar(&backupDestination, "dest", "", "Backup to")
 	backup.PersistentFlags().BoolVar(&recursive, "recursive", false, "Trying to backup in recursive fashion from src to dest")
+	backup.PersistentFlags().IntVar(&backupThreads, "threads", 2*runtime.NumCPU(), "Number of threads to do backup")
 }
