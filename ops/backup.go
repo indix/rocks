@@ -44,8 +44,8 @@ func walkSourceDir(source, destination string, threads int) error {
 	workerPool := WorkerPool{
 		MaxWorkers: threads,
 		Op: func(request WorkRequest) error {
-			log.Printf("Got work %v\n", request)
-			return DoBackup(request.Source, request.Destination)
+			work := request.(BackupWork)
+			return DoBackup(work.Source, work.Destination)
 		},
 	}
 	workerPool.Initialize()
@@ -66,7 +66,7 @@ func walkSourceDir(source, destination string, threads int) error {
 				return err
 			}
 
-			work := WorkRequest{
+			work := BackupWork{
 				Source:      dbLoc,
 				Destination: dbBackupLoc,
 			}

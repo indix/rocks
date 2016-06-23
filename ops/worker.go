@@ -2,8 +2,18 @@ package ops
 
 import "sync"
 
-// WorkRequest struct contains source and destination for backup / restore
-type WorkRequest struct {
+// WorkRequest Base type of all work objects
+type WorkRequest interface{}
+
+// RestoreWork struct contains source, destination and WAL for restore
+type RestoreWork struct {
+	Source      string
+	Destination string
+	WalDir      string
+}
+
+// BackupWork struct contains source and destination for backup
+type BackupWork struct {
 	Source      string
 	Destination string
 }

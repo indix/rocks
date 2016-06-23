@@ -5,7 +5,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 	"github.com/tecbot/gorocksdb"
 )
@@ -15,6 +17,7 @@ var restoreDestination string
 var walDestinationDir string // generally the same as restoreDestination
 var recursive bool
 var keepLogFiles bool
+var restoreThreads int
 
 // LatestBackup is used to find the backup location
 const LatestBackup = "LATEST_BACKUP"
@@ -39,13 +42,22 @@ func restoreDatabase(args []string) error {
 	}
 
 	if recursive {
-		return walkBackupDir(restoreSource, restoreDestination, walDestinationDir)
+		return walkBackupDir(restoreSource, restoreDestination, walDestinationDir, restoreThreads)
 	}
 	return DoRestore(restoreSource, restoreDestination, walDestinationDir)
 }
 
-func walkBackupDir(source, destination, walDestinationDir string) error {
-	return filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
+func walkBackupDir(source, destination, walDestinationDir string, numThreads int) error {
+	workerPool := WorkerPool{
+		MaxWorkers: restoreThreads,
+		Op: func(request WorkRequest) error {
+			work := request.(RestoreWork)
+			return DoRestore(work.Source, work.Destination, work.WalDir)
+		},
+	}
+	workerPool.Initialize()
+
+	err := filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
 		if info.Name() == LatestBackup {
 			dbLoc := filepath.Dir(path)
 			dbRelative, err := filepath.Rel(source, dbLoc)
@@ -67,16 +79,28 @@ func walkBackupDir(source, destination, walDestinationDir string) error {
 				return err
 			}
 
-			if err = DoRestore(dbLoc, dbRestoreLoc, walRestoreLoc); err != nil {
-				log.Print(err)
-				return err
+			work := RestoreWork{
+				Source:      dbLoc,
+				Destination: dbRestoreLoc,
+				WalDir:      walRestoreLoc,
 			}
-
+			workerPool.AddWork(work)
 			return filepath.SkipDir
 		}
 
 		return walkErr
 	})
+
+	var result error
+	if errFromWorkers := workerPool.Join(); errFromWorkers != nil {
+		multierror.Append(result, errFromWorkers)
+	}
+
+	if err != nil {
+		multierror.Append(result, err)
+	}
+
+	return result
 }
 
 // DoRestore triggers a restore from the specified backup location
@@ -106,4 +130,5 @@ func init() {
 	restore.PersistentFlags().StringVar(&walDestinationDir, "wal", "", "Restore WAL to (generally same as --dest)")
 	restore.PersistentFlags().BoolVar(&recursive, "recursive", false, "Trying restoring in recursive fashion from src to dest")
 	restore.PersistentFlags().BoolVar(&keepLogFiles, "keep-log-files", false, "If true, restore won't overwrite the existing log files in wal_dir")
+	restore.PersistentFlags().IntVar(&restoreThreads, "threads", 2*runtime.NumCPU(), "Number of threads while restoring")
 }
