@@ -94,11 +94,11 @@ func DoRecursiveRestore(source, destination, walDestinationDir string, numThread
 
 	var result error
 	if errFromWorkers := workerPool.Join(); errFromWorkers != nil {
-		multierror.Append(result, errFromWorkers)
+		result = multierror.Append(result, errFromWorkers)
 	}
 
 	if err != nil {
-		multierror.Append(result, err)
+		result = multierror.Append(result, err)
 	}
 
 	return result

@@ -23,9 +23,11 @@ func (pool *WorkerPool) Initialize() {
 	pool.errs = make(chan error)
 	// Error handler
 	go func(combined *error) {
+		var result = *combined
 		for err := range pool.errs {
-			multierror.Append(*combined, err)
+			result = multierror.Append(result, err)
 		}
+		combined = &result
 	}(&pool.finalError)
 }
 
