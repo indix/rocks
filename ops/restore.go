@@ -119,6 +119,7 @@ func DoRestore(source, destination, walDestinationDir string, keepLogFiles bool)
 		restoreOpts.SetKeepLogFiles(1)
 	}
 	err = db.RestoreDBFromLatestBackup(destination, walDestinationDir, restoreOpts)
+	db.Close()
 	log.Printf("Restore complete from %s to %s and WAL went into %s\n", source, destination, walDestinationDir)
 	return err
 }

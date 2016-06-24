@@ -1,6 +1,7 @@
 package ops
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -67,6 +68,50 @@ func TestRecursiveRestore(t *testing.T) {
 	}
 
 	err = DoRecursiveRestore(baseBackupDir, baseRestoreDir, baseRestoreDir, 1, true)
+	assert.NoError(t, err)
+	for _, relLocation := range paths {
+		assert.True(t, Exists(filepath.Join(baseRestoreDir, relLocation, Current)))
+	}
+}
+
+func TestRecursiveRestoreParallely(t *testing.T) {
+	const ShardCount = 10
+	const DBsInEachShard = 3
+	baseDataDir, err := ioutil.TempDir("", "baseDataDir")
+	assert.NoError(t, err)
+	defer os.RemoveAll(baseDataDir)
+
+	baseBackupDir, err := ioutil.TempDir("", "baseBackupDir")
+	assert.NoError(t, err)
+	defer os.RemoveAll(baseBackupDir)
+
+	baseRestoreDir, err := ioutil.TempDir("", "baseRestoreDir")
+	assert.NoError(t, err)
+	defer os.RemoveAll(baseRestoreDir)
+
+	var paths []string
+	for shard := 0; shard < ShardCount; shard++ {
+		for db := 0; db < DBsInEachShard; db++ {
+			path := fmt.Sprintf("%d/store_%d/", shard, db)
+			paths = append(paths, path)
+		}
+	}
+
+	// recursively write data
+	for _, relLocation := range paths {
+		err = os.MkdirAll(filepath.Join(baseDataDir, relLocation), os.ModePerm)
+		assert.NoError(t, err)
+		WriteTestDB(t, filepath.Join(baseDataDir, relLocation))
+	}
+
+	// recursive backup + assert it
+	err = DoRecursiveBackup(baseDataDir, baseBackupDir, 1)
+	assert.NoError(t, err)
+	for _, relLocation := range paths {
+		assert.True(t, Exists(filepath.Join(baseBackupDir, relLocation, LatestBackup)))
+	}
+
+	err = DoRecursiveRestore(baseBackupDir, baseRestoreDir, baseRestoreDir, 5, true)
 	assert.NoError(t, err)
 	for _, relLocation := range paths {
 		assert.True(t, Exists(filepath.Join(baseRestoreDir, relLocation, Current)))

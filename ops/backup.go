@@ -104,6 +104,8 @@ func DoBackup(source, destination string) error {
 		return err
 	}
 	err = backup.CreateNewBackup(db)
+	db.Close()
+	backup.Close()
 	log.Printf("Backup from %s to %s completed\n", source, destination)
 	return err
 }
