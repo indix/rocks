@@ -34,12 +34,13 @@ func backupDatabase(args []string) error {
 		return fmt.Errorf("--dest was not set")
 	}
 	if recursive {
-		return walkSourceDir(backupSource, backupDestination, backupThreads)
+		return DoRecursiveBackup(backupSource, backupDestination, backupThreads)
 	}
 	return DoBackup(backupSource, backupDestination)
 }
 
-func walkSourceDir(source, destination string, threads int) error {
+// DoRecursiveBackup recursively takes a rocksdb backup keeping the folder structure intact as in source
+func DoRecursiveBackup(source, destination string, threads int) error {
 
 	workerPool := WorkerPool{
 		MaxWorkers: threads,

@@ -42,17 +42,18 @@ func restoreDatabase(args []string) error {
 	}
 
 	if recursive {
-		return walkBackupDir(restoreSource, restoreDestination, walDestinationDir, restoreThreads)
+		return DoRecursiveRestore(restoreSource, restoreDestination, walDestinationDir, restoreThreads, keepLogFiles)
 	}
-	return DoRestore(restoreSource, restoreDestination, walDestinationDir)
+	return DoRestore(restoreSource, restoreDestination, walDestinationDir, keepLogFiles)
 }
 
-func walkBackupDir(source, destination, walDestinationDir string, numThreads int) error {
+// DoRecursiveRestore recursively restores a rocksdb keeping the folder structure intact from backup to restore location
+func DoRecursiveRestore(source, destination, walDestinationDir string, numThreads int, keepLogFiles bool) error {
 	workerPool := WorkerPool{
 		MaxWorkers: restoreThreads,
 		Op: func(request WorkRequest) error {
 			work := request.(RestoreWork)
-			return DoRestore(work.Source, work.Destination, work.WalDir)
+			return DoRestore(work.Source, work.Destination, work.WalDir, keepLogFiles)
 		},
 	}
 	workerPool.Initialize()
@@ -104,7 +105,7 @@ func walkBackupDir(source, destination, walDestinationDir string, numThreads int
 }
 
 // DoRestore triggers a restore from the specified backup location
-func DoRestore(source, destination, walDestinationDir string) error {
+func DoRestore(source, destination, walDestinationDir string, keepLogFiles bool) error {
 	log.Printf("Trying to restore backup from %s to %s and WAL is going to %s\n", source, destination, walDestinationDir)
 
 	opts := gorocksdb.NewDefaultOptions()

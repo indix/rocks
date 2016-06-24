@@ -3,6 +3,7 @@ package ops
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,7 +29,7 @@ func TestRestore(t *testing.T) {
 	err = DoBackup(dataDir, backupDir)
 	assert.NoError(t, err)
 
-	err = DoRestore(backupDir, restoreDir, restoreDir)
+	err = DoRestore(backupDir, restoreDir, restoreDir, false)
 	assert.NoError(t, err)
 
 	db = openDB(t, restoreDir)

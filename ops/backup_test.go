@@ -30,15 +30,6 @@ func TestBackup(t *testing.T) {
 	assert.True(t, Exists(filepath.Join(backupDir, LatestBackup)))
 }
 
-func Exists(name string) bool {
-	if _, err := os.Stat(name); err != nil {
-		if os.IsNotExist(err) {
-			return false
-		}
-	}
-	return true
-}
-
 func TestRecursiveBackup(t *testing.T) {
 	baseDataDir, err := ioutil.TempDir("", "baseDataDir")
 	err = os.MkdirAll(baseDataDir, os.ModePerm)
@@ -67,10 +58,19 @@ func TestRecursiveBackup(t *testing.T) {
 		db.Close()
 	}
 
-	err = walkSourceDir(baseDataDir, baseBackupDir, 1)
+	err = DoRecursiveBackup(baseDataDir, baseBackupDir, 1)
 	assert.NoError(t, err)
 
 	for _, relLocation := range paths {
 		assert.True(t, Exists(filepath.Join(baseBackupDir, relLocation, LatestBackup)))
 	}
+}
+
+func Exists(name string) bool {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
 }
