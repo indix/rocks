@@ -7,11 +7,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/tecbot/gorocksdb"
 )
 
 func TestBackup(t *testing.T) {
-
 	dataDir, err := ioutil.TempDir("", "ind9-rocks")
 	defer os.RemoveAll(dataDir)
 	assert.NoError(t, err)
@@ -19,11 +17,7 @@ func TestBackup(t *testing.T) {
 	defer os.RemoveAll(backupDir)
 	assert.NoError(t, err)
 
-	db := openDB(t, dataDir)
-	wo := gorocksdb.NewDefaultWriteOptions()
-	db.Put(wo, []byte("foo1"), []byte("bar"))
-	db.Put(wo, []byte("foo2"), []byte("bar"))
-	db.Close()
+	WriteTestDB(t, dataDir)
 	err = DoBackup(dataDir, backupDir)
 	assert.NoError(t, err)
 
@@ -58,13 +52,4 @@ func TestRecursiveBackup(t *testing.T) {
 	for _, relLocation := range paths {
 		assert.True(t, Exists(filepath.Join(baseBackupDir, relLocation, LatestBackup)))
 	}
-}
-
-func Exists(name string) bool {
-	if _, err := os.Stat(name); err != nil {
-		if os.IsNotExist(err) {
-			return false
-		}
-	}
-	return true
 }
