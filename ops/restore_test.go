@@ -21,26 +21,15 @@ func TestRestore(t *testing.T) {
 	assert.NoError(t, err)
 	defer os.RemoveAll(dataDir)
 
-	db := openDB(t, dataDir)
-	wo := gorocksdb.NewDefaultWriteOptions()
-	db.Put(wo, []byte("foo1"), []byte("bar"))
-	db.Put(wo, []byte("foo2"), []byte("bar"))
-	db.Close()
+	WriteTestDB(t, dataDir)
+
 	err = DoBackup(dataDir, backupDir)
 	assert.NoError(t, err)
+	assert.True(t, Exists(filepath.Join(backupDir, LatestBackup)))
 
 	err = DoRestore(backupDir, restoreDir, restoreDir, false)
 	assert.NoError(t, err)
-
-	db = openDB(t, restoreDir)
-	ro := gorocksdb.NewDefaultReadOptions()
-	value, err := db.GetBytes(ro, []byte("foo1"))
-	assert.NoError(t, err)
-	assert.Equal(t, "bar", string(value))
-
-	value, err = db.GetBytes(ro, []byte("foo2"))
-	assert.NoError(t, err)
-	assert.Equal(t, "bar", string(value))
+	assert.True(t, Exists(filepath.Join(restoreDir, Current)))
 }
 
 func TestRecursiveRestore(t *testing.T) {
@@ -52,7 +41,7 @@ func TestRecursiveRestore(t *testing.T) {
 	assert.NoError(t, err)
 	defer os.RemoveAll(baseBackupDir)
 
-	baseRestoreDir, err := ioutil.TempDir("", "ind9-rocks-restore")
+	baseRestoreDir, err := ioutil.TempDir("", "baseRestoreDir")
 	assert.NoError(t, err)
 	defer os.RemoveAll(baseRestoreDir)
 
@@ -63,6 +52,7 @@ func TestRecursiveRestore(t *testing.T) {
 		"2/store_2/",
 	}
 
+	// recursively write data
 	for _, relLocation := range paths {
 		err = os.MkdirAll(filepath.Join(baseDataDir, relLocation), os.ModePerm)
 		assert.NoError(t, err)
