@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -66,6 +67,9 @@ func remoteBackupTrigger(args []string) error {
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
+	}
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("Got %d (%s) from the server\n", resp.StatusCode, resp.Status)
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
