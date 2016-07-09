@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
@@ -88,4 +89,12 @@ func DoCompaction(source string) error {
 	db.Close()
 	log.Printf("Compaction for %s completed\n", source)
 	return err
+}
+
+func init() {
+	Rocks.AddCommand(compact)
+
+	compact.PersistentFlags().StringVar(&backupSource, "src", "", "Compact for")
+	compact.PersistentFlags().BoolVar(&recursive, "recursive", false, "Trying to compact in recursive fashion for src")
+	compact.PersistentFlags().IntVar(&backupThreads, "threads", 2*runtime.NumCPU(), "Number of threads to do backup")
 }
