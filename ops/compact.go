@@ -94,7 +94,7 @@ func DoCompaction(source string) error {
 func init() {
 	Rocks.AddCommand(compact)
 
-	compact.PersistentFlags().StringVar(&compactionSource, "src", "", "Compact for")
+	compact.PersistentFlags().StringVar(&compactionSource, "src", "", "Compact for the source rocksdb store")
 	compact.PersistentFlags().BoolVar(&recursive, "recursive", false, "Trying to compact in recursive fashion for src")
 	compact.PersistentFlags().IntVar(&compactionThreads, "threads", 2*runtime.NumCPU(), "Number of threads to do backup")
 }
