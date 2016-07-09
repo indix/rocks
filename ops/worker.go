@@ -18,6 +18,11 @@ type BackupWork struct {
 	Destination string
 }
 
+// CompactionWork struct contains source for compaction
+type CompactionWork struct {
+	Source string
+}
+
 // Worker for now
 type Worker struct {
 	Queue  chan WorkRequest
