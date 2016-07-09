@@ -8,13 +8,14 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
+	"github.com/tecbot/gorocksdb"
 )
 
 var compactionSource string
-var compactionDestination string
 var compactionThreads int
+var keys gorocksdb.Range
 
-var backup = &cobra.Command{
+var compact = &cobra.Command{
 	Use:   "compact",
 	Short: "Does a compaction on rocksdb stores",
 	Long:  "Does a compaction on rocksdb stores",
@@ -25,23 +26,21 @@ func compactDatabase(args []string) error {
 	if compactionSource == "" {
 		return fmt.Errorf("--src was not set")
 	}
-	if compactionDestination == "" {
-		return fmt.Errorf("--dest was not set")
-	}
+
 	if recursive {
-		return DoRecursiveCompaction(compactionSource, compactionDestination, compactionThreads)
+		return DoRecursiveCompaction(compactionSource, compactionThreads)
 	}
-	return DoCompaction(compactionSource, compactionDestination)
+	return DoCompaction(compactionSource)
 }
 
 // DoRecursiveCompaction recursively compacts a rocksdb store keeping the folder structure intact as in source
-func DoRecursiveCompaction(source, destination string, threads int) error {
+func DoRecursiveCompaction(source string, threads int) error {
 
 	workerPool := WorkerPool{
 		MaxWorkers: threads,
 		Op: func(request WorkRequest) error {
 			work := request.(CompactionWork)
-			return DoCompaction(work.Source, work.Destination)
+			return DoCompaction(work.Source)
 		},
 	}
 	workerPool.Initialize()
@@ -50,21 +49,8 @@ func DoRecursiveCompaction(source, destination string, threads int) error {
 		if info.Name() == Current {
 			dbLoc := filepath.Dir(path)
 
-			dbRelative, err := filepath.Rel(source, dbLoc)
-			if err != nil {
-				log.Print(err)
-				return err
-			}
-
-			dbCompactionLoc := filepath.Join(destination, dbRelative)
-			if err = os.MkdirAll(dbCompactionLoc, os.ModePerm); err != nil {
-				log.Print(err)
-				return err
-			}
-
 			work := CompactionWork{
-				Source:      dbLoc,
-				Destination: dbCompactionLoc,
+				Source: dbLoc,
 			}
 			workerPool.AddWork(work)
 			return filepath.SkipDir
@@ -82,4 +68,24 @@ func DoRecursiveCompaction(source, destination string, threads int) error {
 	}
 
 	return result
+}
+
+// DoCompaction triggers a compaction from the source
+func DoCompaction(source string) error {
+	log.Printf("Trying to compact data for %s\n", source)
+
+	opts := gorocksdb.NewDefaultOptions()
+	compactOpts := gorocksdb.NewDefaultReadOptions()
+	db, err := gorocksdb.OpenDb(opts, source)
+
+	keys.Start = db.NewIterator(compactOpts).Key().Data()
+	db.CompactRange(keys)
+
+	if err != nil {
+		return err
+	}
+
+	db.Close()
+	log.Printf("Compaction for %s completed\n", source)
+	return err
 }
