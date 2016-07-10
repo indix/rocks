@@ -82,7 +82,6 @@ func DoStats(source string) error {
 	statsOpts := gorocksdb.NewDefaultReadOptions()
 	statsOpts.SetFillCache(false)
 	iterator := db.NewIterator(statsOpts)
-	defer iterator.Close()
 
 	for iterator.SeekToFirst(); iterator.Valid(); iterator.Next() {
 		key := iterator.Key()
@@ -92,10 +91,14 @@ func DoStats(source string) error {
 		value.Free()
 	}
 
+	if err = iterator.Err(); err != nil {
+		return err
+	}
+
+	iterator.Close()
 	db.Close()
-	err = iterator.Err()
-	log.Printf("Statistics generated for %s", source)
-	return err
+	log.Printf("Statistics generated from source %s\n", source)
+	return nil
 }
 
 func init() {
