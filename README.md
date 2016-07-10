@@ -35,6 +35,7 @@ Flags:
       --recursive        Trying restoring in recursive fashion from src to dest
       --src string       Restore from
       --wal string       Restore WAL to (generally same as --dest)
+      --threads int      Number of CPU threads to work with (default : 2 * #(CPU Cores)
 ```
 
 ### Backup
@@ -49,6 +50,7 @@ Flags:
       --dest string      Backup to
       --recursive        Trying to backup in recursive fashion from src to dest
       --src string       Backup from
+      --threads int      Number of CPU threads to work with (default : 2 * #(CPU Cores)
 ```
 
 ### Remote Backup Trigger
@@ -65,6 +67,19 @@ Flags:
   -X, --method string            HTTP Method to invoke on the url (default "GET")
   -D, --payload string           File contents to be passed as payload in the request. If you're pipeing use "stdin".
   -k, --skip-ssl-verificatioin   Ignore SSL errors - while connecting to self-signed HTTPS servers
+```
+### Statistics
+```
+$ rocks statistics --help
+Displays current statistics for a rocksdb store
+
+Usage:
+  rocks statistics [flags]
+
+Flags:
+      --recursive     Trying to generate statistics in recursive fashion for src
+      --src string    Statistics for
+      --threads int   Number of threads to generate statistics (default : 2 * #(CPU Cores)
 ```
 
 ## License
