@@ -80,14 +80,20 @@ func DoStats(source string) error {
 	}
 
 	statsOpts := gorocksdb.NewDefaultReadOptions()
+	statsOpts.SetFillCache(false)
 	iterator := db.NewIterator(statsOpts)
+	defer iterator.Close()
+
 	for iterator.SeekToFirst(); iterator.Valid(); iterator.Next() {
-		fmt.Printf("Key : %v  Value : %v\n", iterator.Key().Data(), iterator.Value().Data())
+		key := iterator.Key()
+		value := iterator.Value()
+		fmt.Printf("Key : %v  Value : %v\n", key.Data(), value.Data())
+		key.Free()
+		value.Free()
 	}
 
-	err = iterator.Err()
 	db.Close()
-	iterator.Close()
+	err = iterator.Err()
 	log.Printf("Statistics generated for %s", source)
 	return err
 }
