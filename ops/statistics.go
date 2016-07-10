@@ -2,11 +2,13 @@ package ops
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
+	"github.com/tecbot/gorocksdb"
 )
 
 var statsSource string
@@ -64,4 +66,27 @@ func DoRecursiveStats(source string, threads int) error {
 	}
 
 	return result
+}
+
+// DoStats generates statistics for the source
+func DoStats(source string) error {
+	log.Printf("Trying to generate statistics for %s\n", source)
+
+	opts := gorocksdb.NewDefaultOptions()
+	db, err := gorocksdb.OpenDb(opts, source)
+	if err != nil {
+		return err
+	}
+
+	statsOpts := gorocksdb.NewDefaultReadOptions()
+	iterator := db.NewIterator(statsOpts)
+	for iterator.SeekToFirst(); iterator.Valid(); iterator.Next() {
+		fmt.Printf("Key : %v  Value : %v\n", iterator.Key().Data(), iterator.Value().Data())
+	}
+
+	err = iterator.Err()
+	db.Close()
+	iterator.Close()
+	log.Printf("Statistics generated for %s", source)
+	return err
 }
