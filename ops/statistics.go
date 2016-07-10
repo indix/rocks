@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
@@ -89,4 +90,12 @@ func DoStats(source string) error {
 	iterator.Close()
 	log.Printf("Statistics generated for %s", source)
 	return err
+}
+
+func init() {
+	Rocks.AddCommand(stats)
+
+	stats.PersistentFlags().StringVar(&statsSource, "src", "", "Statistics for")
+	stats.PersistentFlags().BoolVar(&recursive, "recursive", false, "Trying to generate statistics in recursive fashion for src")
+	stats.PersistentFlags().IntVar(&statsThreads, "threads", 2*runtime.NumCPU(), "Number of threads to generate statistics")
 }
