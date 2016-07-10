@@ -2,6 +2,7 @@ package ops
 
 import (
 	"sync"
+	"sync/atomic"
 
 	"github.com/hashicorp/go-multierror"
 )
@@ -14,13 +15,16 @@ type WorkerPool struct {
 	items       chan WorkRequest
 	itemsMarker sync.WaitGroup
 	errs        chan error
+	count       chan int64
 	finalError  error
+	finalCount  int64
 }
 
 // Initialize the workerpool
 func (pool *WorkerPool) Initialize() {
 	pool.items = make(chan WorkRequest)
 	pool.errs = make(chan error)
+	pool.count = make(chan int64)
 	// Error handler
 	go func(combined *error) {
 		var result = *combined
@@ -29,6 +33,14 @@ func (pool *WorkerPool) Initialize() {
 		}
 		combined = &result
 	}(&pool.finalError)
+	// Counter handler
+	go func(combined *int64) {
+		var result = *combined
+		for countForShard := range pool.count {
+			result = atomic.AddInt64(&pool.finalCount, countForShard)
+		}
+		combined = &result
+	}(&pool.finalCount)
 }
 
 // AddWork to a worker in the Pool
@@ -38,6 +50,7 @@ func (pool *WorkerPool) AddWork(work WorkRequest) {
 			Queue:  pool.items,
 			Errs:   pool.errs,
 			Op:     pool.Op,
+			Count:  pool.count,
 			Marker: &pool.itemsMarker,
 		}
 		worker.Start()
@@ -54,4 +67,10 @@ func (pool *WorkerPool) Join() error {
 
 	close(pool.errs)
 	return pool.finalError
+}
+
+// JoinCount returns total count of all the keys in all the shards - pool is not usable after this
+func (pool *WorkerPool) JoinCount() int64 {
+	close(pool.count)
+	return atomic.LoadInt64(&pool.finalCount)
 }

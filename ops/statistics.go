@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sync/atomic"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
@@ -14,6 +15,8 @@ import (
 
 var statsSource string
 var statsThreads int
+var countForShards int64
+var rowCounter int64
 
 var stats = &cobra.Command{
 	Use:   "statistics",
@@ -66,6 +69,9 @@ func DoRecursiveStats(source string, threads int) error {
 		result = multierror.Append(result, err)
 	}
 
+	rowCounter = workerPool.JoinCount()
+	fmt.Printf("Total number of keys in the shard is %v", rowCounter)
+
 	return result
 }
 
@@ -84,13 +90,10 @@ func DoStats(source string) error {
 	iterator := db.NewIterator(statsOpts)
 
 	for iterator.SeekToFirst(); iterator.Valid(); iterator.Next() {
-		key := iterator.Key()
-		value := iterator.Value()
-		fmt.Printf("Key : %v  Value : %v\n", key.Data(), value.Data())
-		key.Free()
-		value.Free()
+		atomic.AddInt64(&countForShards, 1)
 	}
-
+	rowCounter = atomic.LoadInt64(&countForShards)
+	fmt.Printf("Total keys in %s is %v", source, rowCounter)
 	if err = iterator.Err(); err != nil {
 		return err
 	}

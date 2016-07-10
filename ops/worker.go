@@ -28,6 +28,7 @@ type Worker struct {
 	Queue  chan WorkRequest
 	Errs   chan error
 	Op     func(WorkRequest) error
+	Count  chan int64
 	Marker *sync.WaitGroup
 }
 
