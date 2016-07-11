@@ -14,8 +14,9 @@ func TestStatistics(t *testing.T) {
 	defer os.RemoveAll(dataDir)
 	assert.NoError(t, err)
 	WriteTestDB(t, dataDir)
-	err = DoStats(dataDir)
+	count, err := DoStats(dataDir)
 	assert.NoError(t, err)
+	assert.Equal(t, int64(2), count)
 }
 
 func TestRecursiveStatistics(t *testing.T) {
@@ -35,6 +36,7 @@ func TestRecursiveStatistics(t *testing.T) {
 		WriteTestDB(t, filepath.Join(baseDataDir, relLocation))
 	}
 
-	err = DoRecursiveStats(baseDataDir, 1)
+	count, err := DoRecursiveStats(baseDataDir, 3)
 	assert.NoError(t, err)
+	assert.Equal(t, int64(8), count)
 }
