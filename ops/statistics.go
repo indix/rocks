@@ -39,10 +39,10 @@ func generateStats(args []string) (err error) {
 
 // DoRecursiveStats recursively generates statistics for a rocksdb store keeping the folder structure intact as in source
 func DoRecursiveStats(source string, threads int) (int64, error) {
-	var countsChan chan int64
+	var countsChan = make(chan int64)
 	var wg sync.WaitGroup
 	var totalRecordsCount int64
-	go func(countsChan chan int64, totalRecordsCount *int64) {
+	go func(countsChan <-chan int64, totalRecordsCount *int64) {
 		wg.Add(1)
 		for dbCount := range countsChan {
 			*totalRecordsCount += dbCount
@@ -103,7 +103,6 @@ func DoStats(source string) (int64, error) {
 	statsOpts := gorocksdb.NewDefaultReadOptions()
 	statsOpts.SetFillCache(false)
 	iterator := db.NewIterator(statsOpts)
-	defer iterator.Close()
 
 	var rowCount int64
 
@@ -112,8 +111,10 @@ func DoStats(source string) (int64, error) {
 	}
 
 	if err = iterator.Err(); err != nil {
+		iterator.Close()
 		return rowCount, err
 	}
+	iterator.Close()
 
 	return rowCount, nil
 }

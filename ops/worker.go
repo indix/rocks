@@ -21,7 +21,7 @@ type BackupWork struct {
 // StatsWork struct contains source for generating statistics
 type StatsWork struct {
 	Source string
-	Count  chan int64
+	Count  chan<- int64
 }
 
 // Worker for now
