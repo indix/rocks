@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"sync/atomic"
+	"sync"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
@@ -15,8 +15,6 @@ import (
 
 var statsSource string
 var statsThreads int
-var countForShards int64
-var rowCounter int64
 
 var stats = &cobra.Command{
 	Use:   "statistics",
@@ -25,24 +23,40 @@ var stats = &cobra.Command{
 	Run:   AttachHandler(generateStats),
 }
 
-func generateStats(args []string) error {
+func generateStats(args []string) (err error) {
 	if statsSource == "" {
 		return fmt.Errorf("--src was not set")
 	}
+	var count int64
 	if recursive {
-		return DoRecursiveStats(statsSource, statsThreads)
+		count, err = DoRecursiveStats(statsSource, statsThreads)
+	} else {
+		count, err = DoStats(statsSource)
 	}
-	return DoStats(statsSource)
+	fmt.Printf("Row Count on %s is %d\n", statsSource, count)
+	return err
 }
 
 // DoRecursiveStats recursively generates statistics for a rocksdb store keeping the folder structure intact as in source
-func DoRecursiveStats(source string, threads int) error {
+func DoRecursiveStats(source string, threads int) (int64, error) {
+	var countsChan chan int64
+	var wg sync.WaitGroup
+	var totalRecordsCount int64
+	go func(countsChan chan int64, totalRecordsCount *int64) {
+		wg.Add(1)
+		for dbCount := range countsChan {
+			*totalRecordsCount += dbCount
+		}
+		wg.Done()
+	}(countsChan, &totalRecordsCount)
 
 	workerPool := WorkerPool{
 		MaxWorkers: threads,
 		Op: func(request WorkRequest) error {
 			work := request.(StatsWork)
-			return DoStats(work.Source)
+			count, err := DoStats(work.Source)
+			work.Count <- count
+			return err
 		},
 	}
 	workerPool.Initialize()
@@ -53,6 +67,7 @@ func DoRecursiveStats(source string, threads int) error {
 
 			work := StatsWork{
 				Source: dbLoc,
+				Count:  countsChan,
 			}
 			workerPool.AddWork(work)
 			return filepath.SkipDir
@@ -64,44 +79,43 @@ func DoRecursiveStats(source string, threads int) error {
 	if errFromWorkers := workerPool.Join(); errFromWorkers != nil {
 		result = multierror.Append(result, errFromWorkers)
 	}
-
 	if err != nil {
 		result = multierror.Append(result, err)
 	}
 
-	rowCounter = workerPool.JoinCount()
-	fmt.Printf("Total number of keys in the shard is %v", rowCounter)
+	close(countsChan)
+	wg.Wait()
 
-	return result
+	return totalRecordsCount, result
 }
 
 // DoStats generates statistics for the source
-func DoStats(source string) error {
+func DoStats(source string) (int64, error) {
 	log.Printf("Trying to generate statistics for %s\n", source)
 
 	opts := gorocksdb.NewDefaultOptions()
 	db, err := gorocksdb.OpenDb(opts, source)
+	defer db.Close()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	statsOpts := gorocksdb.NewDefaultReadOptions()
 	statsOpts.SetFillCache(false)
 	iterator := db.NewIterator(statsOpts)
+	defer iterator.Close()
+
+	var rowCount int64
 
 	for iterator.SeekToFirst(); iterator.Valid(); iterator.Next() {
-		atomic.AddInt64(&countForShards, 1)
-	}
-	rowCounter = atomic.LoadInt64(&countForShards)
-	fmt.Printf("Total keys in %s is %v", source, rowCounter)
-	if err = iterator.Err(); err != nil {
-		return err
+		rowCount++
 	}
 
-	iterator.Close()
-	db.Close()
-	log.Printf("Statistics generated from source %s\n", source)
-	return nil
+	if err = iterator.Err(); err != nil {
+		return rowCount, err
+	}
+
+	return rowCount, nil
 }
 
 func init() {
