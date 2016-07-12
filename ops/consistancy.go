@@ -9,8 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var consistancySource string
-var consistancyRestore string
+var consistencySource string
+var consistencyRestore string
 var consistencyFlag bool
 var flagCounter int
 
@@ -22,11 +22,11 @@ var consistency = &cobra.Command{
 }
 
 func checkConsistency(args []string) (err error) {
-	if consistancySource == "" {
+	if consistencySource == "" {
 		return fmt.Errorf("--src was not set")
 	}
 
-	if consistancyRestore == "" {
+	if consistencyRestore == "" {
 		return fmt.Errorf("--dest was not set")
 	}
 
@@ -34,9 +34,9 @@ func checkConsistency(args []string) (err error) {
 	var checkConsistant bool
 
 	if recursive {
-		flagCheck, err = DoRecursiveConsistency(consistancySource, consistancyRestore)
+		flagCheck, err = DoRecursiveConsistency(consistencySource, consistencyRestore)
 	} else {
-		checkConsistant, err = DoConsistency(consistancySource, consistancyRestore)
+		checkConsistant, err = DoConsistency(consistencySource, consistencyRestore)
 	}
 
 	if flagCheck != 0 || checkConsistant == false {
@@ -92,4 +92,12 @@ func DoConsistency(source, restore string) (bool, error) {
 		return consistencyFlag, err
 	}
 	return consistencyFlag, err
+}
+
+func init() {
+	Rocks.AddCommand(consistency)
+
+	consistency.PersistentFlags().StringVar(&consistencySource, "src", "", "Rocks store location")
+	consistency.PersistentFlags().StringVar(&consistencyRestore, "dest", "", "Resstore location for Rocks store")
+	consistency.PersistentFlags().BoolVar(&recursive, "recursive", false, "Trying to check consistency between rocks store and and it's restore")
 }
