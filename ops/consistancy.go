@@ -3,6 +3,8 @@ package ops
 import (
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/tecbot/gorocksdb"
@@ -10,8 +12,8 @@ import (
 
 var consistancySource string
 var consistancyRestore string
-var consistancyThreads int
-var flag bool
+var consistencyFlag bool
+var flagCounter int
 
 var consistency = &cobra.Command{
 	Use:   "consistency",
@@ -28,24 +30,46 @@ func checkConsistency(args []string) (err error) {
 	if consistancyRestore == "" {
 		return fmt.Errorf("--dest was not set")
 	}
+
+	var flagCheck int
 	var checkConsistant bool
+
 	if recursive {
-		checkConsistant, err = DoRecursiveConsistency(consistancySource, consistancyRestore, consistancyThreads)
+		flagCheck, err = DoRecursiveConsistency(consistancySource, consistancyRestore)
 	} else {
 		checkConsistant, err = DoConsistency(consistancySource, consistancyRestore)
 	}
-	if checkConsistant {
-		fmt.Printf("Store and Restore are consistant")
+
+	if flagCheck != 0 || checkConsistant == false {
+		fmt.Printf("Source directory and it's are not consistant")
 	}
 	return err
 }
 
 // DoRecursiveConsistency checks for consistency recursively
-func DoRecursiveConsistency(source, restore string, threads int) (bool, error) {
-	/*
-	   Implement this piece of code
-	*/
-	return false, nil
+func DoRecursiveConsistency(source, restore string) (int, error) {
+	log.Printf("Initializing consistency check between %s data directory and %s as it's restore directory\n", source, restore)
+
+	flagCounter = 0
+	err := filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
+		if info.Name() == Current {
+			sourceDbLoc := filepath.Dir(path)
+			sourceDbRelative, err := filepath.Rel(source, sourceDbLoc)
+			restoreDbLoc := filepath.Join(restore, sourceDbRelative)
+
+			checkConsistant, err := DoConsistency(sourceDbLoc, restoreDbLoc)
+			if checkConsistant == false {
+				flagCounter++
+			}
+			if err != nil {
+				log.Print(err)
+				return err
+			}
+			return filepath.SkipDir
+		}
+		return walkErr
+	})
+	return flagCounter, err
 }
 
 // DoConsistency checks for consistency between rocks source store and its restore
@@ -58,28 +82,21 @@ func DoConsistency(source, restore string) (bool, error) {
 	dbRestore, err := gorocksdb.OpenDb(opts, restore)
 	defer dbRestore.Close()
 
-	consistencyOpts := gorocksdb.NewDefaultReadOptions()
-	consistencyOpts.SetFillCache(false)
-	sourceIterator := dbSource.NewIterator(consistencyOpts)
-	restoreIterator := dbRestore.NewIterator(consistencyOpts)
-
 	var rowCountSource, rowCountRestore int64
 	log.Printf("Trying to collect the stores with non-matching number of keys\n")
-	flag = true
-	for sourceIterator.SeekToFirst(); sourceIterator.Valid(); sourceIterator.Next() {
-		rowCountSource++
-	}
-	for restoreIterator.SeekToFirst(); restoreIterator.Valid(); restoreIterator.Next() {
-		rowCountRestore++
-	}
+	consistencyFlag = true
+
+	rowCountSource, err = DoStats(source)
+	rowCountRestore, err = DoStats(restore)
+
 	if rowCountSource != rowCountRestore {
 		log.Printf("Store : %s and corresponding Restore %s number of keys did not match\n", source, restore)
 		log.Printf("Store Count : %v\n", rowCountSource)
 		log.Printf("Restore Count : %v\n", rowCountRestore)
-		flag = false
+		consistencyFlag = false
 	}
 	if err != nil {
-		return flag, err
+		return consistencyFlag, err
 	}
-	return flag, err
+	return consistencyFlag, err
 }
