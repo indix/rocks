@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
-	"github.com/tecbot/gorocksdb"
 )
 
 var consistancySource string
@@ -76,17 +75,11 @@ func DoRecursiveConsistency(source, restore string) (int, error) {
 func DoConsistency(source, restore string) (bool, error) {
 	log.Printf("Initializing consistency check between %s rocks store and %s as it's restore\n", source, restore)
 
-	opts := gorocksdb.NewDefaultOptions()
-	dbSource, err := gorocksdb.OpenDb(opts, source)
-	defer dbSource.Close()
-	dbRestore, err := gorocksdb.OpenDb(opts, restore)
-	defer dbRestore.Close()
-
 	var rowCountSource, rowCountRestore int64
 	log.Printf("Trying to collect the stores with non-matching number of keys\n")
 	consistencyFlag = true
 
-	rowCountSource, err = DoStats(source)
+	rowCountSource, err := DoStats(source)
 	rowCountRestore, err = DoStats(restore)
 
 	if rowCountSource != rowCountRestore {
