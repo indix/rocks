@@ -11,6 +11,7 @@ import (
 
 var consistencySource string
 var consistencyRestore string
+var counterFlag = 0
 
 var consistency = &cobra.Command{
 	Use:   "consistency",
@@ -28,15 +29,14 @@ func checkConsistency(args []string) (err error) {
 		return fmt.Errorf("--dest was not set")
 	}
 
-	var checkConsistant bool
 	var flagCheck int
 	if recursive {
 		flagCheck, err = DoRecursiveConsistency(consistencySource, consistencyRestore)
 	} else {
-		checkConsistant, err = DoConsistency(consistencySource, consistencyRestore)
+		err = DoConsistency(consistencySource, consistencyRestore)
 	}
 
-	if flagCheck == 0 || checkConsistant {
+	if flagCheck == 0 {
 		fmt.Printf("\nPASS: Source directory: %s and it's Restore: %s are consistant\n", consistencySource, consistencyRestore)
 	}
 	return err
@@ -46,35 +46,28 @@ func checkConsistency(args []string) (err error) {
 func DoRecursiveConsistency(source, restore string) (int, error) {
 	log.Printf("Initializing consistency check between %s data directory and %s as it's restore directory\n", source, restore)
 
-	flagCounter := 0
 	err := filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
 		if info.Name() == Current {
 			sourceDbLoc := filepath.Dir(path)
 			sourceDbRelative, err := filepath.Rel(source, sourceDbLoc)
 			restoreDbLoc := filepath.Join(restore, sourceDbRelative)
 
-			checkConsistant, err := DoConsistency(sourceDbLoc, restoreDbLoc)
-			if checkConsistant == true {
-				flagCounter++
-			}
-			if err != nil {
-				log.Print(err)
+			if err = DoConsistency(sourceDbLoc, restoreDbLoc); err != nil {
 				return err
 			}
 			return filepath.SkipDir
 		}
 		return walkErr
 	})
-	return flagCounter, err
+	return counterFlag, err
 }
 
 // DoConsistency checks for consistency between rocks source store and its restore
-func DoConsistency(source, restore string) (bool, error) {
+func DoConsistency(source, restore string) error {
 	log.Printf("Initializing consistency check between %s rocks store and %s as it's restore\n", source, restore)
 
 	var rowCountSource, rowCountRestore int64
 	log.Printf("Trying to collect the stores with non-matching number of keys\n")
-	var consistencyFlag bool
 
 	rowCountSource, err := DoStats(source)
 	rowCountRestore, err = DoStats(restore)
@@ -83,12 +76,13 @@ func DoConsistency(source, restore string) (bool, error) {
 		log.Printf("Store : %s and corresponding Restore %s number of keys did not match\n", source, restore)
 		log.Printf("Store Count : %v\n", rowCountSource)
 		log.Printf("Restore Count : %v\n", rowCountRestore)
-		consistencyFlag = true
+		counterFlag++
 	}
 	if err != nil {
-		return consistencyFlag, err
+		return err
 	}
-	return consistencyFlag, err
+	log.Printf("Store: %s is consistent with restore: %s\n", source, restore)
+	return nil
 }
 
 func init() {
