@@ -22,7 +22,6 @@ func TestConsitency(t *testing.T) {
 	defer os.RemoveAll(dataDir)
 
 	WriteTestDB(t, dataDir)
-	var check bool
 
 	err = DoBackup(dataDir, backupDir)
 	assert.NoError(t, err)
@@ -32,9 +31,8 @@ func TestConsitency(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, Exists(filepath.Join(restoreDir, Current)))
 
-	check, err = DoConsistency(dataDir, restoreDir)
+	err = DoConsistency(dataDir, restoreDir)
 	assert.NoError(t, err)
-	assert.False(t, check)
 }
 
 func TestRecursiveConsistency(t *testing.T) {
