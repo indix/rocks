@@ -34,7 +34,7 @@ func TestConsitency(t *testing.T) {
 
 	check, err = DoConsistency(dataDir, restoreDir)
 	assert.NoError(t, err)
-	assert.True(t, check)
+	assert.False(t, check)
 }
 
 func TestRecursiveConsistency(t *testing.T) {

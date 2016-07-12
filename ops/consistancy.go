@@ -11,8 +11,6 @@ import (
 
 var consistencySource string
 var consistencyRestore string
-var consistencyFlag bool
-var flagCounter int
 
 var consistency = &cobra.Command{
 	Use:   "consistency",
@@ -30,17 +28,16 @@ func checkConsistency(args []string) (err error) {
 		return fmt.Errorf("--dest was not set")
 	}
 
-	var flagCheck int
 	var checkConsistant bool
-
+	var flagCheck int
 	if recursive {
 		flagCheck, err = DoRecursiveConsistency(consistencySource, consistencyRestore)
 	} else {
 		checkConsistant, err = DoConsistency(consistencySource, consistencyRestore)
 	}
 
-	if flagCheck != 0 || checkConsistant == false {
-		fmt.Printf("Source directory and it's are not consistant")
+	if flagCheck == 0 || checkConsistant {
+		fmt.Printf("\nPASS: Source directory: %s and it's Restore: %s are consistant\n", consistencySource, consistencyRestore)
 	}
 	return err
 }
@@ -49,7 +46,7 @@ func checkConsistency(args []string) (err error) {
 func DoRecursiveConsistency(source, restore string) (int, error) {
 	log.Printf("Initializing consistency check between %s data directory and %s as it's restore directory\n", source, restore)
 
-	flagCounter = 0
+	flagCounter := 0
 	err := filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
 		if info.Name() == Current {
 			sourceDbLoc := filepath.Dir(path)
@@ -57,7 +54,7 @@ func DoRecursiveConsistency(source, restore string) (int, error) {
 			restoreDbLoc := filepath.Join(restore, sourceDbRelative)
 
 			checkConsistant, err := DoConsistency(sourceDbLoc, restoreDbLoc)
-			if checkConsistant == false {
+			if checkConsistant == true {
 				flagCounter++
 			}
 			if err != nil {
@@ -77,7 +74,7 @@ func DoConsistency(source, restore string) (bool, error) {
 
 	var rowCountSource, rowCountRestore int64
 	log.Printf("Trying to collect the stores with non-matching number of keys\n")
-	consistencyFlag = true
+	var consistencyFlag bool
 
 	rowCountSource, err := DoStats(source)
 	rowCountRestore, err = DoStats(restore)
@@ -86,7 +83,7 @@ func DoConsistency(source, restore string) (bool, error) {
 		log.Printf("Store : %s and corresponding Restore %s number of keys did not match\n", source, restore)
 		log.Printf("Store Count : %v\n", rowCountSource)
 		log.Printf("Restore Count : %v\n", rowCountRestore)
-		consistencyFlag = false
+		consistencyFlag = true
 	}
 	if err != nil {
 		return consistencyFlag, err
