@@ -32,7 +32,7 @@ func TestConsitency(t *testing.T) {
 
 	err = restore.DoRestore(backupDir, restoreDir, restoreDir, false)
 	assert.NoError(t, err)
-	assert.True(t, Exists(filepath.Join(restoreDir, Current)))
+	assert.True(t, ops.Exists(filepath.Join(restoreDir, ops.Current)))
 
 	err = DoConsistency(dataDir, restoreDir)
 	assert.NoError(t, err)
@@ -65,20 +65,20 @@ func TestRecursiveConsistency(t *testing.T) {
 	for _, relLocation := range paths {
 		err = os.MkdirAll(filepath.Join(baseDataDir, relLocation), os.ModePerm)
 		assert.NoError(t, err)
-		WriteTestDB(t, filepath.Join(baseDataDir, relLocation))
+		ops.WriteTestDB(t, filepath.Join(baseDataDir, relLocation))
 	}
 
 	// recursive backup + assert it
-	err = DoRecursiveBackup(baseDataDir, baseBackupDir, 1)
+	err = backup.DoRecursiveBackup(baseDataDir, baseBackupDir, 1)
 	assert.NoError(t, err)
 	for _, relLocation := range paths {
-		assert.True(t, Exists(filepath.Join(baseBackupDir, relLocation, LatestBackup)))
+		assert.True(t, ops.Exists(filepath.Join(baseBackupDir, relLocation, ops.LatestBackup)))
 	}
 
-	err = DoRecursiveRestore(baseBackupDir, baseRestoreDir, baseRestoreDir, 5, true)
+	err = restore.DoRecursiveRestore(baseBackupDir, baseRestoreDir, baseRestoreDir, 5, true)
 	assert.NoError(t, err)
 	for _, relLocation := range paths {
-		assert.True(t, Exists(filepath.Join(baseRestoreDir, relLocation, Current)))
+		assert.True(t, ops.Exists(filepath.Join(baseRestoreDir, relLocation, ops.Current)))
 	}
 
 	flag, err := DoRecursiveConsistency(baseDataDir, baseRestoreDir)

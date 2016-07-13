@@ -1,4 +1,4 @@
-package ops
+package httpTrigger
 
 import (
 	"github.com/ind9/rocks/ops"

@@ -57,7 +57,7 @@ func DoRecursiveRestore(source, destination, walDestinationDir string, numThread
 	workerPool.Initialize()
 
 	err := filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
-		if info.Name() == LatestBackup {
+		if info.Name() == ops.LatestBackup {
 			dbLoc := filepath.Dir(path)
 			dbRelative, err := filepath.Rel(source, dbLoc)
 			if err != nil {

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/ind9/rocks/ops"
+	"github.com/ind9/rocks/statistics"
 	"github.com/spf13/cobra"
 )
 
@@ -88,7 +89,7 @@ func DoConsistency(source, restore string) error {
 }
 
 func init() {
-	Rocks.AddCommand(consistency)
+	ops.Rocks.AddCommand(consistency)
 
 	consistency.PersistentFlags().StringVar(&consistencySource, "src", "", "Rocks store location")
 	consistency.PersistentFlags().StringVar(&consistencyRestore, "dest", "", "Restore location for Rocks store")

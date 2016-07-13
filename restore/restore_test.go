@@ -27,7 +27,7 @@ func TestRestore(t *testing.T) {
 
 	err = backup.DoBackup(dataDir, backupDir)
 	assert.NoError(t, err)
-	assert.True(t, ops.Exists(filepath.Join(backupDir, LatestBackup)))
+	assert.True(t, ops.Exists(filepath.Join(backupDir, ops.LatestBackup)))
 
 	err = DoRestore(backupDir, restoreDir, restoreDir, false)
 	assert.NoError(t, err)
@@ -91,7 +91,7 @@ func RecursivelyTestRestore(t *testing.T, paths []string, backupThreads, restore
 	err = backup.DoRecursiveBackup(baseDataDir, baseBackupDir, 1)
 	assert.NoError(t, err)
 	for _, relLocation := range paths {
-		assert.True(t, ops.Exists(filepath.Join(baseBackupDir, relLocation, LatestBackup)))
+		assert.True(t, ops.Exists(filepath.Join(baseBackupDir, relLocation, ops.LatestBackup)))
 	}
 
 	err = DoRecursiveRestore(baseBackupDir, baseRestoreDir, baseRestoreDir, 5, true)
