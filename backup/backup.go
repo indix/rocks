@@ -1,4 +1,4 @@
-package ops
+package backup
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	"runtime"
 
 	"github.com/hashicorp/go-multierror"
+	"github.com/ind9/rocks/ops"
 	"github.com/spf13/cobra"
 	"github.com/tecbot/gorocksdb"
 )
@@ -15,6 +16,7 @@ import (
 var backupSource string
 var backupDestination string
 var backupThreads int
+var recursive bool
 
 // Current is to identify a rocksdb store.
 const Current = "CURRENT"
@@ -23,7 +25,7 @@ var backup = &cobra.Command{
 	Use:   "backup",
 	Short: "Backs up rocksdb stores",
 	Long:  "Backs up rocksdb stores",
-	Run:   AttachHandler(backupDatabase),
+	Run:   ops.AttachHandler(backupDatabase),
 }
 
 func backupDatabase(args []string) error {
@@ -42,10 +44,10 @@ func backupDatabase(args []string) error {
 // DoRecursiveBackup recursively takes a rocksdb backup keeping the folder structure intact as in source
 func DoRecursiveBackup(source, destination string, threads int) error {
 
-	workerPool := WorkerPool{
+	workerPool := ops.WorkerPool{
 		MaxWorkers: threads,
-		Op: func(request WorkRequest) error {
-			work := request.(BackupWork)
+		Op: func(request ops.WorkRequest) error {
+			work := request.(ops.BackupWork)
 			return DoBackup(work.Source, work.Destination)
 		},
 	}
@@ -67,7 +69,7 @@ func DoRecursiveBackup(source, destination string, threads int) error {
 				return err
 			}
 
-			work := BackupWork{
+			work := ops.BackupWork{
 				Source:      dbLoc,
 				Destination: dbBackupLoc,
 			}
@@ -111,7 +113,7 @@ func DoBackup(source, destination string) error {
 }
 
 func init() {
-	Rocks.AddCommand(backup)
+	ops.Rocks.AddCommand(backup)
 
 	backup.PersistentFlags().StringVar(&backupSource, "src", "", "Backup from")
 	backup.PersistentFlags().StringVar(&backupDestination, "dest", "", "Backup to")

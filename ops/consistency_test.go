@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/ind9/rocks/backup"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,7 +24,7 @@ func TestConsitency(t *testing.T) {
 
 	WriteTestDB(t, dataDir)
 
-	err = DoBackup(dataDir, backupDir)
+	err = backup.DoBackup(dataDir, backupDir)
 	assert.NoError(t, err)
 	assert.True(t, Exists(filepath.Join(backupDir, LatestBackup)))
 

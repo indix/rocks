@@ -30,6 +30,7 @@ all:
 
 test:
 	go test -v github.com/ind9/rocks
+	go test -v github.com/ind9/rocks/backup
 	go test -v github.com/ind9/rocks/ops
 
 test-only:

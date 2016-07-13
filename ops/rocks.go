@@ -9,6 +9,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Current is to identify a rocksdb store.
+const Current = "CURRENT"
+
 // Rocks is the entry point command in the application
 var Rocks = &cobra.Command{
 	Use:   "rocks",
