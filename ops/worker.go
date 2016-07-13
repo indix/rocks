@@ -24,6 +24,12 @@ type StatsWork struct {
 	Count  chan<- int64
 }
 
+// ConsistencyWork struct contains source and restore locations for comparison
+type ConsistencyWork struct {
+	Source  string
+	Restore string
+}
+
 // Worker for now
 type Worker struct {
 	Queue  chan WorkRequest
