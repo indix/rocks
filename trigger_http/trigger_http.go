@@ -1,4 +1,4 @@
-package ops
+package trigger_http
 
 import (
 	"bufio"
@@ -13,6 +13,7 @@ import (
 
 	"golang.org/x/net/http2"
 
+	"github.com/ind9/rocks/ops"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +21,7 @@ var httpCmd = &cobra.Command{
 	Use:   "http",
 	Short: "Triggers a backup via HTTP",
 	Long:  `Triggers a backup via HTTP`,
-	Run:   AttachHandler(remoteBackupTrigger),
+	Run:   ops.AttachHandler(remoteBackupTrigger),
 }
 
 var customHeaders []string // given in key=value format via command line
