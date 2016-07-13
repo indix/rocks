@@ -20,9 +20,6 @@ var recursive bool
 var keepLogFiles bool
 var restoreThreads int
 
-// LatestBackup is used to find the backup location
-const LatestBackup = "LATEST_BACKUP"
-
 var restore = &cobra.Command{
 	Use:   "restore",
 	Short: "Restore backed up rocksdb files",

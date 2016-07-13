@@ -1,4 +1,4 @@
-package ops
+package statistics
 
 import (
 	"io/ioutil"

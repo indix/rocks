@@ -12,6 +12,9 @@ import (
 // Current is to identify a rocksdb store.
 const Current = "CURRENT"
 
+// LatestBackup is used to find the backup location
+const LatestBackup = "LATEST_BACKUP"
+
 // Rocks is the entry point command in the application
 var Rocks = &cobra.Command{
 	Use:   "rocks",

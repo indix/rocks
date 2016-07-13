@@ -1,4 +1,4 @@
-package ops
+package consistency
 
 import (
 	"fmt"
@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/ind9/rocks/backup"
+	"github.com/ind9/rocks/ops"
+	"github.com/ind9/rocks/restore"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,13 +24,13 @@ func TestConsitency(t *testing.T) {
 	assert.NoError(t, err)
 	defer os.RemoveAll(dataDir)
 
-	WriteTestDB(t, dataDir)
+	ops.WriteTestDB(t, dataDir)
 
 	err = backup.DoBackup(dataDir, backupDir)
 	assert.NoError(t, err)
-	assert.True(t, Exists(filepath.Join(backupDir, LatestBackup)))
+	assert.True(t, ops.Exists(filepath.Join(backupDir, ops.LatestBackup)))
 
-	err = DoRestore(backupDir, restoreDir, restoreDir, false)
+	err = restore.DoRestore(backupDir, restoreDir, restoreDir, false)
 	assert.NoError(t, err)
 	assert.True(t, Exists(filepath.Join(restoreDir, Current)))
 

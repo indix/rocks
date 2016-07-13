@@ -1,4 +1,4 @@
-package ops
+package consistency
 
 import (
 	"fmt"
@@ -6,18 +6,20 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/ind9/rocks/ops"
 	"github.com/spf13/cobra"
 )
 
 var consistencySource string
 var consistencyRestore string
 var counterFlag = 0
+var recursive bool
 
 var consistency = &cobra.Command{
 	Use:   "consistency",
 	Short: "Checks for consistency between rocks store and it's corresponding restore",
 	Long:  "Checks for the consistency between rocks store and it's corresponding restore",
-	Run:   AttachHandler(checkConsistency),
+	Run:   ops.AttachHandler(checkConsistency),
 }
 
 func checkConsistency(args []string) (err error) {
@@ -47,7 +49,7 @@ func DoRecursiveConsistency(source, restore string) (int, error) {
 	log.Printf("Initializing consistency check between %s data directory and %s as it's restore directory\n", source, restore)
 
 	err := filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
-		if info.Name() == Current {
+		if info.Name() == ops.Current {
 			sourceDbLoc := filepath.Dir(path)
 			sourceDbRelative, err := filepath.Rel(source, sourceDbLoc)
 			restoreDbLoc := filepath.Join(restore, sourceDbRelative)
@@ -69,8 +71,8 @@ func DoConsistency(source, restore string) error {
 	var rowCountSource, rowCountRestore int64
 	log.Printf("Trying to collect the stores with non-matching number of keys\n")
 
-	rowCountSource, err := DoStats(source)
-	rowCountRestore, err = DoStats(restore)
+	rowCountSource, err := statistics.DoStats(source)
+	rowCountRestore, err = statistics.DoStats(restore)
 
 	if rowCountSource != rowCountRestore {
 		log.Printf("Store : %s and corresponding Restore %s number of keys did not match\n", source, restore)
