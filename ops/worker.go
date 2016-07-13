@@ -18,6 +18,12 @@ type BackupWork struct {
 	Destination string
 }
 
+// StatsWork struct contains source for generating statistics
+type StatsWork struct {
+	Source string
+	Count  chan<- int64
+}
+
 // Worker for now
 type Worker struct {
 	Queue  chan WorkRequest
