@@ -68,6 +68,7 @@ Flags:
   -D, --payload string           File contents to be passed as payload in the request. If you're pipeing use "stdin".
   -k, --skip-ssl-verificatioin   Ignore SSL errors - while connecting to self-signed HTTPS servers
 ```
+
 ### Statistics
 ```
 $ rocks statistics --help
@@ -80,6 +81,19 @@ Flags:
       --recursive     Trying to generate statistics in recursive fashion for src
       --src string    Statistics for
       --threads int   Number of threads to generate statistics (default : 2 * #(CPU Cores)
+```
+
+# Consistency
+```
+Checks for the consistency between rocks store and it's corresponding restore
+
+Usage:
+  rocks consistency [flags]
+
+Flags:
+      --src string    Rocks store location
+      --dest string   Restore location for Rocks store
+      --recursive     Trying to check consistency between rocks store and and it's restore
 ```
 
 ## License
