@@ -83,7 +83,7 @@ Flags:
       --threads int   Number of threads to generate statistics (default : 2 * #(CPU Cores)
 ```
 
-# Consistency
+### Consistency
 ```
 Checks for the consistency between rocks store and it's corresponding restore
 
