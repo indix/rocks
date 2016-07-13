@@ -89,6 +89,6 @@ func init() {
 	Rocks.AddCommand(consistency)
 
 	consistency.PersistentFlags().StringVar(&consistencySource, "src", "", "Rocks store location")
-	consistency.PersistentFlags().StringVar(&consistencyRestore, "dest", "", "Resstore location for Rocks store")
+	consistency.PersistentFlags().StringVar(&consistencyRestore, "dest", "", "Restore location for Rocks store")
 	consistency.PersistentFlags().BoolVar(&recursive, "recursive", false, "Trying to check consistency between rocks store and and it's restore")
 }
