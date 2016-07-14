@@ -78,7 +78,7 @@ func DoCompaction(source string) error {
 	opts := gorocksdb.NewDefaultOptions()
 	compactOpts := gorocksdb.NewDefaultReadOptions()
 	db, err := gorocksdb.OpenDb(opts, source)
-
+	defer db.Close()
 	keys.Start = db.NewIterator(compactOpts).Key().Data()
 	db.CompactRange(keys)
 
@@ -86,7 +86,6 @@ func DoCompaction(source string) error {
 		return err
 	}
 
-	db.Close()
 	log.Printf("Compaction for %s completed\n", source)
 	return err
 }
