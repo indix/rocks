@@ -18,6 +18,11 @@ type BackupWork struct {
 	Destination string
 }
 
+// CompactionWork struct contains source for compaction
+type CompactionWork struct {
+	Source string
+}
+
 // StatsWork struct contains source for generating statistics
 type StatsWork struct {
 	Source string
