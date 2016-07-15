@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ind9/rocks/ops"
+	"github.com/ind9/rocks/cmd/ops"
 )
 
 // Version of the app

@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ind9/rocks/ops"
-	"github.com/ind9/rocks/statistics"
+	"github.com/ind9/rocks/cmd/ops"
+	"github.com/ind9/rocks/cmd/statistics"
 	"github.com/spf13/cobra"
 )
 

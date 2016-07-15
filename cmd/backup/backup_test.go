@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ind9/rocks/ops"
+	"github.com/ind9/rocks/cmd/ops"
 	"github.com/stretchr/testify/assert"
 )
 

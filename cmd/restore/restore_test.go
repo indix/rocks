@@ -1,4 +1,4 @@
-package consistency
+package restore
 
 import (
 	"fmt"
@@ -7,13 +7,12 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ind9/rocks/backup"
-	"github.com/ind9/rocks/ops"
-	"github.com/ind9/rocks/restore"
+	"github.com/ind9/rocks/cmd/backup"
+	"github.com/ind9/rocks/cmd/ops"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestConsitency(t *testing.T) {
+func TestRestore(t *testing.T) {
 	backupDir, err := ioutil.TempDir("", "ind9-rocks-backup")
 	assert.NoError(t, err)
 	defer os.RemoveAll(backupDir)
@@ -30,15 +29,12 @@ func TestConsitency(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, ops.Exists(filepath.Join(backupDir, ops.LatestBackup)))
 
-	err = restore.DoRestore(backupDir, restoreDir, restoreDir, false)
+	err = DoRestore(backupDir, restoreDir, restoreDir, false)
 	assert.NoError(t, err)
 	assert.True(t, ops.Exists(filepath.Join(restoreDir, ops.Current)))
-
-	err = DoConsistency(dataDir, restoreDir)
-	assert.NoError(t, err)
 }
 
-func TestRecursiveConsistency(t *testing.T) {
+func TestRecursiveRestore(t *testing.T) {
 	const ShardCount = 3
 	const DBsInEachShard = 3
 	var paths []string
@@ -48,6 +44,29 @@ func TestRecursiveConsistency(t *testing.T) {
 			paths = append(paths, path)
 		}
 	}
+
+	backupThreads := 1
+	restoreThreads := 1
+	RecursivelyTestRestore(t, paths, backupThreads, restoreThreads)
+}
+
+func TestRecursiveRestoreParallely(t *testing.T) {
+	const ShardCount = 10
+	const DBsInEachShard = 3
+	var paths []string
+	for shard := 0; shard < ShardCount; shard++ {
+		for db := 0; db < DBsInEachShard; db++ {
+			path := fmt.Sprintf("%d/store_%d/", shard, db)
+			paths = append(paths, path)
+		}
+	}
+
+	backupThreads := 1
+	restoreThreads := 5
+	RecursivelyTestRestore(t, paths, backupThreads, restoreThreads)
+}
+
+func RecursivelyTestRestore(t *testing.T, paths []string, backupThreads, restoreThreads int) {
 
 	baseDataDir, err := ioutil.TempDir("", "baseDataDir")
 	assert.NoError(t, err)
@@ -75,13 +94,9 @@ func TestRecursiveConsistency(t *testing.T) {
 		assert.True(t, ops.Exists(filepath.Join(baseBackupDir, relLocation, ops.LatestBackup)))
 	}
 
-	err = restore.DoRecursiveRestore(baseBackupDir, baseRestoreDir, baseRestoreDir, 5, true)
+	err = DoRecursiveRestore(baseBackupDir, baseRestoreDir, baseRestoreDir, 5, true)
 	assert.NoError(t, err)
 	for _, relLocation := range paths {
 		assert.True(t, ops.Exists(filepath.Join(baseRestoreDir, relLocation, ops.Current)))
 	}
-
-	flag, err := DoRecursiveConsistency(baseDataDir, baseRestoreDir)
-	assert.NoError(t, err)
-	assert.Equal(t, flag, 0, "flag should be equal to 0")
 }

@@ -30,10 +30,10 @@ all:
 
 test:
 	go test -v github.com/ind9/rocks
-	go test -v github.com/ind9/rocks/backup
-	go test -v github.com/ind9/rocks/restore
-	go test -v github.com/ind9/rocks/statistics
-	go test -v github.com/ind9/rocks/consistency
+	go test -v github.com/ind9/rocks/cmd/backup
+	go test -v github.com/ind9/rocks/cmd/restore
+	go test -v github.com/ind9/rocks/cmd/statistics
+	go test -v github.com/ind9/rocks/cmd/consistency
 
 test-only:
 	go test -v github.com/ind9/rocks/${name}
