@@ -18,9 +18,6 @@ var backupDestination string
 var backupThreads int
 var recursive bool
 
-// Current is to identify a rocksdb store.
-const Current = "CURRENT"
-
 var backup = &cobra.Command{
 	Use:   "backup",
 	Short: "Backs up rocksdb stores",
@@ -54,7 +51,7 @@ func DoRecursiveBackup(source, destination string, threads int) error {
 	workerPool.Initialize()
 
 	err := filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
-		if info.Name() == Current {
+		if info.Name() == ops.Current {
 			dbLoc := filepath.Dir(path)
 
 			dbRelative, err := filepath.Rel(source, dbLoc)
