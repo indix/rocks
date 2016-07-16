@@ -35,7 +35,7 @@ Flags:
       --recursive        Trying restoring in recursive fashion from src to dest
       --src string       Restore from
       --wal string       Restore WAL to (generally same as --dest)
-      --threads int      Number of CPU threads to work with (default : 2 * #(CPU Cores)
+      --threads int      Number of CPU threads to work with (default : 2 * #(CPU Cores))
 ```
 
 ### Backup
@@ -50,7 +50,7 @@ Flags:
       --dest string      Backup to
       --recursive        Trying to backup in recursive fashion from src to dest
       --src string       Backup from
-      --threads int      Number of CPU threads to work with (default : 2 * #(CPU Cores)
+      --threads int      Number of CPU threads to work with (default : 2 * #(CPU Cores))
 ```
 
 ### Remote Backup Trigger
@@ -67,6 +67,20 @@ Flags:
   -X, --method string            HTTP Method to invoke on the url (default "GET")
   -D, --payload string           File contents to be passed as payload in the request. If you're pipeing use "stdin".
   -k, --skip-ssl-verificatioin   Ignore SSL errors - while connecting to self-signed HTTPS servers
+```
+
+### Compact
+```
+$ rocks compact --help
+Does a compaction on rocksdb stores
+
+Usage:
+  rocks compact [flags]
+
+Flags:
+      --recursive     Trying to compact in recursive fashion for src
+      --src string    Compact for
+      --threads int   Number of CPU threads to work with (default : 2 * #(CPU Cores))
 ```
 
 ### Statistics
