@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ind9/rocks/cmd/ops"
+	"github.com/ind9/rocks/cmd"
 	"github.com/ind9/rocks/cmd/test-utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,7 +23,7 @@ func TestBackup(t *testing.T) {
 	err = DoBackup(dataDir, backupDir)
 	assert.NoError(t, err)
 
-	assert.True(t, testutils.Exists(filepath.Join(backupDir, ops.LatestBackup)))
+	assert.True(t, testutils.Exists(filepath.Join(backupDir, cmd.LatestBackup)))
 }
 
 func TestRecursiveBackup(t *testing.T) {
@@ -52,6 +52,6 @@ func TestRecursiveBackup(t *testing.T) {
 	assert.NoError(t, err)
 
 	for _, relLocation := range paths {
-		assert.True(t, testutils.Exists(filepath.Join(baseBackupDir, relLocation, ops.LatestBackup)))
+		assert.True(t, testutils.Exists(filepath.Join(baseBackupDir, relLocation, cmd.LatestBackup)))
 	}
 }
