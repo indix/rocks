@@ -9,6 +9,7 @@ import (
 
 	"github.com/ind9/rocks/cmd/backup"
 	"github.com/ind9/rocks/cmd/ops"
+	"github.com/ind9/rocks/cmd/test-utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,15 +24,15 @@ func TestRestore(t *testing.T) {
 	assert.NoError(t, err)
 	defer os.RemoveAll(dataDir)
 
-	ops.WriteTestDB(t, dataDir)
+	testutils.WriteTestDB(t, dataDir)
 
 	err = backup.DoBackup(dataDir, backupDir)
 	assert.NoError(t, err)
-	assert.True(t, ops.Exists(filepath.Join(backupDir, ops.LatestBackup)))
+	assert.True(t, testutils.Exists(filepath.Join(backupDir, ops.LatestBackup)))
 
 	err = DoRestore(backupDir, restoreDir, restoreDir, false)
 	assert.NoError(t, err)
-	assert.True(t, ops.Exists(filepath.Join(restoreDir, ops.Current)))
+	assert.True(t, testutils.Exists(filepath.Join(restoreDir, ops.Current)))
 }
 
 func TestRecursiveRestore(t *testing.T) {
@@ -84,19 +85,19 @@ func RecursivelyTestRestore(t *testing.T, paths []string, backupThreads, restore
 	for _, relLocation := range paths {
 		err = os.MkdirAll(filepath.Join(baseDataDir, relLocation), os.ModePerm)
 		assert.NoError(t, err)
-		ops.WriteTestDB(t, filepath.Join(baseDataDir, relLocation))
+		testutils.WriteTestDB(t, filepath.Join(baseDataDir, relLocation))
 	}
 
 	// recursive backup + assert it
 	err = backup.DoRecursiveBackup(baseDataDir, baseBackupDir, 1)
 	assert.NoError(t, err)
 	for _, relLocation := range paths {
-		assert.True(t, ops.Exists(filepath.Join(baseBackupDir, relLocation, ops.LatestBackup)))
+		assert.True(t, testutils.Exists(filepath.Join(baseBackupDir, relLocation, ops.LatestBackup)))
 	}
 
 	err = DoRecursiveRestore(baseBackupDir, baseRestoreDir, baseRestoreDir, 5, true)
 	assert.NoError(t, err)
 	for _, relLocation := range paths {
-		assert.True(t, ops.Exists(filepath.Join(baseRestoreDir, relLocation, ops.Current)))
+		assert.True(t, testutils.Exists(filepath.Join(baseRestoreDir, relLocation, ops.Current)))
 	}
 }
