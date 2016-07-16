@@ -88,7 +88,7 @@ func DoConsistency(source, restore string) error {
 }
 
 func init() {
-	ops.Rocks.AddCommand(consistency)
+	Rocks.AddCommand(consistency)
 
 	consistency.PersistentFlags().StringVar(&consistencySource, "src", "", "Rocks store location")
 	consistency.PersistentFlags().StringVar(&consistencyRestore, "dest", "", "Restore location for Rocks store")
