@@ -78,6 +78,7 @@ func remoteBackupTrigger(args []string) error {
 	}
 
 	log.Println(string(body))
+	fmt.Printf("%v", resp.Header)
 	return nil
 }
 
