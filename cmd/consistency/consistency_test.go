@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/ind9/rocks/cmd"
 	"github.com/ind9/rocks/cmd/backup"
 	"github.com/ind9/rocks/cmd/restore"
 	"github.com/ind9/rocks/cmd/test-utils"
@@ -28,11 +29,11 @@ func TestConsitency(t *testing.T) {
 
 	err = backup.DoBackup(dataDir, backupDir)
 	assert.NoError(t, err)
-	assert.True(t, testutils.Exists(filepath.Join(backupDir, ops.LatestBackup)))
+	assert.True(t, testutils.Exists(filepath.Join(backupDir, cmd.LatestBackup)))
 
 	err = restore.DoRestore(backupDir, restoreDir, restoreDir, false)
 	assert.NoError(t, err)
-	assert.True(t, testutils.Exists(filepath.Join(restoreDir, ops.Current)))
+	assert.True(t, testutils.Exists(filepath.Join(restoreDir, cmd.Current)))
 
 	err = DoConsistency(dataDir, restoreDir)
 	assert.NoError(t, err)
@@ -72,13 +73,13 @@ func TestRecursiveConsistency(t *testing.T) {
 	err = backup.DoRecursiveBackup(baseDataDir, baseBackupDir, 1)
 	assert.NoError(t, err)
 	for _, relLocation := range paths {
-		assert.True(t, testutils.Exists(filepath.Join(baseBackupDir, relLocation, ops.LatestBackup)))
+		assert.True(t, testutils.Exists(filepath.Join(baseBackupDir, relLocation, cmd.LatestBackup)))
 	}
 
 	err = restore.DoRecursiveRestore(baseBackupDir, baseRestoreDir, baseRestoreDir, 5, true)
 	assert.NoError(t, err)
 	for _, relLocation := range paths {
-		assert.True(t, testutils.Exists(filepath.Join(baseRestoreDir, relLocation, ops.Current)))
+		assert.True(t, testutils.Exists(filepath.Join(baseRestoreDir, relLocation, cmd.Current)))
 	}
 
 	flag, err := DoRecursiveConsistency(baseDataDir, baseRestoreDir)
