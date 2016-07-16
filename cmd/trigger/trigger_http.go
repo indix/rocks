@@ -13,7 +13,7 @@ import (
 
 	"golang.org/x/net/http2"
 
-	"github.com/ind9/rocks/cmd/ops"
+	"github.com/ind9/rocks/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +21,7 @@ var httpCmd = &cobra.Command{
 	Use:   "http",
 	Short: "Triggers a backup via HTTP",
 	Long:  `Triggers a backup via HTTP`,
-	Run:   ops.AttachHandler(remoteBackupTrigger),
+	Run:   cmd.AttachHandler(remoteBackupTrigger),
 }
 
 var customHeaders []string // given in key=value format via command line

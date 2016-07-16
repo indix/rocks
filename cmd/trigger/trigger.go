@@ -1,7 +1,7 @@
 package httpTrigger
 
 import (
-	"github.com/ind9/rocks/cmd/ops"
+	"github.com/ind9/rocks/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -12,5 +12,5 @@ var trigger = &cobra.Command{
 }
 
 func init() {
-	ops.Rocks.AddCommand(trigger)
+	cmd.Rocks.AddCommand(trigger)
 }
