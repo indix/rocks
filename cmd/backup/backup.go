@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/ashwanthkumar/golang-utils/worker"
 	"github.com/hashicorp/go-multierror"
-	"github.com/ind9/rocks/cmd/ops"
 	"github.com/spf13/cobra"
 	"github.com/tecbot/gorocksdb"
 )
@@ -22,7 +22,13 @@ var backup = &cobra.Command{
 	Use:   "backup",
 	Short: "Backs up rocksdb stores",
 	Long:  "Backs up rocksdb stores",
-	Run:   ops.AttachHandler(backupDatabase),
+	Run:   AttachHandler(backupDatabase),
+}
+
+// Work struct contains source and destination for backup
+type Work struct {
+	Source      string
+	Destination string
 }
 
 func backupDatabase(args []string) error {
@@ -41,17 +47,17 @@ func backupDatabase(args []string) error {
 // DoRecursiveBackup recursively takes a rocksdb backup keeping the folder structure intact as in source
 func DoRecursiveBackup(source, destination string, threads int) error {
 
-	workerPool := ops.WorkerPool{
+	workerPool := worker.Pool{
 		MaxWorkers: threads,
-		Op: func(request ops.WorkRequest) error {
-			work := request.(ops.BackupWork)
+		Op: func(request worker.Request) error {
+			work := request.(Work)
 			return DoBackup(work.Source, work.Destination)
 		},
 	}
 	workerPool.Initialize()
 
 	err := filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
-		if info.Name() == ops.Current {
+		if info.Name() == Current {
 			dbLoc := filepath.Dir(path)
 
 			dbRelative, err := filepath.Rel(source, dbLoc)
@@ -66,7 +72,7 @@ func DoRecursiveBackup(source, destination string, threads int) error {
 				return err
 			}
 
-			work := ops.BackupWork{
+			work := BackupWork{
 				Source:      dbLoc,
 				Destination: dbBackupLoc,
 			}
@@ -110,7 +116,7 @@ func DoBackup(source, destination string) error {
 }
 
 func init() {
-	ops.Rocks.AddCommand(backup)
+	Rocks.AddCommand(backup)
 
 	backup.PersistentFlags().StringVar(&backupSource, "src", "", "Backup from")
 	backup.PersistentFlags().StringVar(&backupDestination, "dest", "", "Backup to")
