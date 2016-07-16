@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/ashwanthkumar/golang-utils/worker"
 	"github.com/hashicorp/go-multierror"
-	"github.com/ind9/rocks/cmd/ops"
 	"github.com/spf13/cobra"
 	"github.com/tecbot/gorocksdb"
 )
@@ -18,11 +18,17 @@ var statsSource string
 var statsThreads int
 var recursive bool
 
+// Work struct contains source for generating statistics
+type Work struct {
+	Source string
+	Count  chan<- int64
+}
+
 var stats = &cobra.Command{
 	Use:   "statistics",
 	Short: "Displays current statistics for a rocksdb store",
 	Long:  "Displays current statistics for a rocksdb store",
-	Run:   ops.AttachHandler(generateStats),
+	Run:   AttachHandler(generateStats),
 }
 
 func generateStats(args []string) (err error) {
@@ -52,10 +58,10 @@ func DoRecursiveStats(source string, threads int) (int64, error) {
 		wg.Done()
 	}(countsChan, &totalRecordsCount)
 
-	workerPool := ops.WorkerPool{
+	workerPool := worker.Pool{
 		MaxWorkers: threads,
-		Op: func(request ops.WorkRequest) error {
-			work := request.(ops.StatsWork)
+		Op: func(request worker.Request) error {
+			work := request.(Work)
 			count, err := DoStats(work.Source)
 			work.Count <- count
 			return err
@@ -64,10 +70,10 @@ func DoRecursiveStats(source string, threads int) (int64, error) {
 	workerPool.Initialize()
 
 	err := filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
-		if info.Name() == ops.Current {
+		if info.Name() == Current {
 			dbLoc := filepath.Dir(path)
 
-			work := ops.StatsWork{
+			work := Work{
 				Source: dbLoc,
 				Count:  countsChan,
 			}
@@ -122,7 +128,7 @@ func DoStats(source string) (int64, error) {
 }
 
 func init() {
-	ops.Rocks.AddCommand(stats)
+	Rocks.AddCommand(stats)
 
 	stats.PersistentFlags().StringVar(&statsSource, "src", "", "Statistics for")
 	stats.PersistentFlags().BoolVar(&recursive, "recursive", false, "Trying to generate statistics in recursive fashion for src")
