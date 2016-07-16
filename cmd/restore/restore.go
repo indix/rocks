@@ -9,6 +9,7 @@ import (
 
 	"github.com/ashwanthkumar/golang-utils/worker"
 	"github.com/hashicorp/go-multierror"
+	"github.com/ind9/rocks/cmd"
 	"github.com/spf13/cobra"
 	"github.com/tecbot/gorocksdb"
 )
@@ -24,9 +25,10 @@ var restore = &cobra.Command{
 	Use:   "restore",
 	Short: "Restore backed up rocksdb files",
 	Long:  "Restore backed up rocksdb files",
-	Run:   AttachHandler(restoreDatabase),
+	Run:   cmd.AttachHandler(restoreDatabase),
 }
 
+// Work struct contains source and destination for restore
 type Work struct {
 	Source      string
 	Destination string
@@ -63,7 +65,7 @@ func DoRecursiveRestore(source, destination, walDestinationDir string, numThread
 	workerPool.Initialize()
 
 	err := filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
-		if info.Name() == LatestBackup {
+		if info.Name() == cmd.LatestBackup {
 			dbLoc := filepath.Dir(path)
 			dbRelative, err := filepath.Rel(source, dbLoc)
 			if err != nil {
@@ -129,7 +131,7 @@ func DoRestore(source, destination, walDestinationDir string, keepLogFiles bool)
 }
 
 func init() {
-	Rocks.AddCommand(restore)
+	cmd.Rocks.AddCommand(restore)
 
 	restore.PersistentFlags().StringVar(&restoreSource, "src", "", "Restore from")
 	restore.PersistentFlags().StringVar(&restoreDestination, "dest", "", "Restore to")
