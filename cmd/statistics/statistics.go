@@ -10,6 +10,7 @@ import (
 
 	"github.com/ashwanthkumar/golang-utils/worker"
 	"github.com/hashicorp/go-multierror"
+	"github.com/ind9/rocks/cmd"
 	"github.com/spf13/cobra"
 	"github.com/tecbot/gorocksdb"
 )
@@ -28,7 +29,7 @@ var stats = &cobra.Command{
 	Use:   "statistics",
 	Short: "Displays current statistics for a rocksdb store",
 	Long:  "Displays current statistics for a rocksdb store",
-	Run:   AttachHandler(generateStats),
+	Run:   cmd.AttachHandler(generateStats),
 }
 
 func generateStats(args []string) (err error) {
@@ -70,7 +71,7 @@ func DoRecursiveStats(source string, threads int) (int64, error) {
 	workerPool.Initialize()
 
 	err := filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
-		if info.Name() == Current {
+		if info.Name() == cmd.Current {
 			dbLoc := filepath.Dir(path)
 
 			work := Work{
@@ -128,7 +129,7 @@ func DoStats(source string) (int64, error) {
 }
 
 func init() {
-	Rocks.AddCommand(stats)
+	cmd.Rocks.AddCommand(stats)
 
 	stats.PersistentFlags().StringVar(&statsSource, "src", "", "Statistics for")
 	stats.PersistentFlags().BoolVar(&recursive, "recursive", false, "Trying to generate statistics in recursive fashion for src")

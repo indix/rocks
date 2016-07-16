@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/ind9/rocks/cmd"
 	"github.com/ind9/rocks/cmd/statistics"
 	"github.com/spf13/cobra"
 )
@@ -19,7 +20,7 @@ var consistency = &cobra.Command{
 	Use:   "consistency",
 	Short: "Checks for consistency between rocks store and it's corresponding restore",
 	Long:  "Checks for the consistency between rocks store and it's corresponding restore",
-	Run:   AttachHandler(checkConsistency),
+	Run:   cmd.AttachHandler(checkConsistency),
 }
 
 func checkConsistency(args []string) (err error) {
@@ -49,7 +50,7 @@ func DoRecursiveConsistency(source, restore string) (int, error) {
 	log.Printf("Initializing consistency check between %s data directory and %s as it's restore directory\n", source, restore)
 
 	err := filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
-		if info.Name() == Current {
+		if info.Name() == cmd.Current {
 			sourceDbLoc := filepath.Dir(path)
 			sourceDbRelative, err := filepath.Rel(source, sourceDbLoc)
 			restoreDbLoc := filepath.Join(restore, sourceDbRelative)
@@ -88,7 +89,7 @@ func DoConsistency(source, restore string) error {
 }
 
 func init() {
-	Rocks.AddCommand(consistency)
+	cmd.Rocks.AddCommand(consistency)
 
 	consistency.PersistentFlags().StringVar(&consistencySource, "src", "", "Rocks store location")
 	consistency.PersistentFlags().StringVar(&consistencyRestore, "dest", "", "Restore location for Rocks store")

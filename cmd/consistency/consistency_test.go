@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/ind9/rocks/cmd/backup"
-	"github.com/ind9/rocks/cmd/ops"
 	"github.com/ind9/rocks/cmd/restore"
 	"github.com/ind9/rocks/cmd/test-utils"
 	"github.com/stretchr/testify/assert"
