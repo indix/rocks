@@ -104,10 +104,10 @@ func DoStats(source string) (int64, error) {
 
 	opts := gorocksdb.NewDefaultOptions()
 	db, err := gorocksdb.OpenDb(opts, source)
-	defer db.Close()
 	if err != nil {
 		return 0, err
 	}
+	defer db.Close()
 
 	statsOpts := gorocksdb.NewDefaultReadOptions()
 	statsOpts.SetFillCache(false)
