@@ -20,9 +20,9 @@ if [ "${SNAP_CI}x" == "truex" ]; then
   popd
 fi
 
-sudo apt-get install -y libsnappy-dev
+sudo apt-get install -y libsnappy-dev liblz4-dev
 export CGO_CFLAGS="-I${SNAP_CACHE_DIR}/build/rocksdb-${ROCKSB_VERSION}/include"
-export CGO_LDFLAGS="-L${SNAP_CACHE_DIR}/build/rocksdb-${ROCKSB_VERSION} -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy"
+export CGO_LDFLAGS="-L${SNAP_CACHE_DIR}/build/rocksdb-${ROCKSB_VERSION} -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy -llz4"
 
 make build
 make test
