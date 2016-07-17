@@ -1,4 +1,4 @@
-package httpTrigger
+package trigger
 
 import (
 	"bufio"

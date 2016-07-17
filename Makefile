@@ -29,12 +29,14 @@ all:
 	install
 
 test:
-	go test -v github.com/ind9/rocks
+	go test -v github.com/ind9/rocks/
+	go test -v github.com/ind9/rocks/cmd
 	go test -v github.com/ind9/rocks/cmd/backup
 	go test -v github.com/ind9/rocks/cmd/restore
 	go test -v github.com/ind9/rocks/cmd/statistics
 	go test -v github.com/ind9/rocks/cmd/consistency
 	go test -v github.com/ind9/rocks/cmd/compact
+	go test -v github.com/ind9/rocks/cmd/trigger
 
 test-only:
 	go test -v github.com/ind9/rocks/${name}

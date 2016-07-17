@@ -1,4 +1,4 @@
-package httpTrigger
+package trigger
 
 import (
 	"github.com/ind9/rocks/cmd"
