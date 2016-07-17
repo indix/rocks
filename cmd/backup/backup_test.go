@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/ind9/rocks/cmd"
-	"github.com/ind9/rocks/cmd/test-utils"
+	"github.com/ind9/rocks/cmd/testutils"
 	"github.com/stretchr/testify/assert"
 )
 
