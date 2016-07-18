@@ -2,10 +2,12 @@ package ops
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
+
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
@@ -15,6 +17,7 @@ import (
 var compactionSource string
 var compactionThreads int
 var keys gorocksdb.Range
+var logDestination string // generally same as current working directory
 
 var compact = &cobra.Command{
 	Use:   "compact",
@@ -31,6 +34,15 @@ func compactDatabase(args []string) error {
 	if recursive {
 		return DoRecursiveCompaction(compactionSource, compactionThreads)
 	}
+
+	if logDestination == "" {
+		var err error
+		logDestination, err = os.Getwd()
+		if err != nil {
+			return err
+		}
+	}
+
 	return DoCompaction(compactionSource)
 }
 
@@ -73,6 +85,16 @@ func DoRecursiveCompaction(source string, threads int) error {
 
 // DoCompaction triggers a compaction from the source
 func DoCompaction(source string) error {
+
+	logFile, err := os.OpenFile(filepath.Join(logDestination, time.Now().Format(time.RFC850), "compact.log"), os.O_CREATE|os.O_RDWR, 0666)
+	if err != nil {
+		log.Printf("error opening log file: %v", err)
+		log.Printf("Logging on terminal . . . \n")
+		log.SetOutput(os.Stdout)
+	} else {
+		log.SetOutput(logFile)
+	}
+	defer logFile.Close()
 	log.Printf("Trying to compact data for %s\n", source)
 
 	opts := gorocksdb.NewDefaultOptions()
@@ -94,6 +116,7 @@ func init() {
 	Rocks.AddCommand(compact)
 
 	compact.PersistentFlags().StringVar(&compactionSource, "src", "", "Compact for the source rocksdb store")
+	compact.PersistentFlags().StringVar(&logDestination, "logDest", "", "Generate logs to (generally same as current working directory)")
 	compact.PersistentFlags().BoolVar(&recursive, "recursive", false, "Trying to compact in recursive fashion for src")
 	compact.PersistentFlags().IntVar(&compactionThreads, "threads", 2*runtime.NumCPU(), "Number of threads to do backup")
 }
