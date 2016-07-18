@@ -29,30 +29,37 @@ func init() {
 // CommandHandler is the wrapper interface that all commands to be implement as part of their "Run"
 type CommandHandler func(args []string) error
 
+func createLogs() error {
+	var err error
+
+	if logDestination == "" {
+		logDestination, err = os.Getwd()
+	}
+
+	if !Exists(logDestination) {
+		err = os.MkdirAll(logDestination, os.ModePerm)
+	}
+
+	var pathForLog = filepath.Join(logDestination, "rocks_"+time.Now().Format(time.RFC850)+".log")
+	file, err := os.Create(pathForLog)
+	defer file.Close()
+	logFile, err := os.OpenFile(pathForLog, os.O_RDWR, 0644)
+	if err != nil {
+		log.Printf("error opening log file: %v", err)
+		log.Printf("Logging on terminal . . . \n")
+		log.SetOutput(os.Stdout)
+	} else {
+		log.SetOutput(logFile)
+	}
+	defer logFile.Close()
+	return err
+}
+
 // AttachHandler is a wrapper method for all commands that needs to be exposed
 func AttachHandler(handler CommandHandler) func(*cobra.Command, []string) {
 	return func(cmd *cobra.Command, args []string) {
-		if logDestination == "" {
-			var err error
-			logDestination, err = os.Getwd()
-			log.Printf(logDestination)
-			log.Printf("[Error] %v", err)
-		}
-
-		var pathForLog = filepath.Join(logDestination, "rocks_"+time.Now().Format(time.RFC850)+".log")
-		file, err := os.Create(pathForLog)
-		defer file.Close()
-		logFile, err := os.OpenFile(pathForLog, os.O_RDWR, 0644)
-		if err != nil {
-			log.Printf("error opening log file: %v", err)
-			log.Printf("Logging on terminal . . . \n")
-			log.SetOutput(os.Stdout)
-		} else {
-			log.SetOutput(logFile)
-		}
-		defer logFile.Close()
-
 		start := time.Now()
+		err := createLogs()
 		err = handler(args)
 		elapsed := time.Since(start).Seconds()
 		fmt.Printf("This took  %f seconds\n", elapsed)
