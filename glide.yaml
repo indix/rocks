@@ -12,3 +12,5 @@ import:
   subpackages:
   - http2
 - package: github.com/dustin/go-humanize
+- package: github.com/Sirupsen/logrus
+  version: v0.10.0
