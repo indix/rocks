@@ -35,9 +35,14 @@ func AttachHandler(handler CommandHandler) func(*cobra.Command, []string) {
 		if logDestination == "" {
 			var err error
 			logDestination, err = os.Getwd()
-			log.Printf("[Error] %s", err.Error())
+			log.Printf(logDestination)
+			log.Printf("[Error] %v", err)
 		}
-		logFile, err := os.OpenFile(filepath.Join(logDestination, time.Now().Format(time.RFC850), "rocks.log"), os.O_CREATE|os.O_RDWR, 0666)
+
+		var pathForLog = filepath.Join(logDestination, "rocks_"+time.Now().Format(time.RFC850)+".log")
+		file, err := os.Create(pathForLog)
+		defer file.Close()
+		logFile, err := os.OpenFile(pathForLog, os.O_RDWR, 0644)
 		if err != nil {
 			log.Printf("error opening log file: %v", err)
 			log.Printf("Logging on terminal . . . \n")
