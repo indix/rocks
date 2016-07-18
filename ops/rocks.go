@@ -2,12 +2,16 @@ package ops
 
 import (
 	"fmt"
-	"log"
 	"os"
+	"path/filepath"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/spf13/cobra"
 )
+
+var logDestination string // generally same as current working directory
 
 // Rocks is the entry point command in the application
 var Rocks = &cobra.Command{
@@ -18,14 +22,33 @@ var Rocks = &cobra.Command{
 Find more details at https://github.com/ind9/rocks`,
 }
 
+func init() {
+	Rocks.PersistentFlags().StringVar(&logDestination, "logDest", "", "Write logs to (generally same as current working directory)")
+}
+
 // CommandHandler is the wrapper interface that all commands to be implement as part of their "Run"
 type CommandHandler func(args []string) error
 
 // AttachHandler is a wrapper method for all commands that needs to be exposed
 func AttachHandler(handler CommandHandler) func(*cobra.Command, []string) {
 	return func(cmd *cobra.Command, args []string) {
+		if logDestination == "" {
+			var err error
+			logDestination, err = os.Getwd()
+			log.Printf("[Error] %s", err.Error())
+		}
+		logFile, err := os.OpenFile(filepath.Join(logDestination, time.Now().Format(time.RFC850), "compact.log"), os.O_CREATE|os.O_RDWR, 0666)
+		if err != nil {
+			log.Printf("error opening log file: %v", err)
+			log.Printf("Logging on terminal . . . \n")
+			log.SetOutput(os.Stdout)
+		} else {
+			log.SetOutput(logFile)
+		}
+		defer logFile.Close()
+
 		start := time.Now()
-		err := handler(args)
+		err = handler(args)
 		elapsed := time.Since(start).Seconds()
 		fmt.Printf("This took  %f seconds\n", elapsed)
 		if err != nil {
