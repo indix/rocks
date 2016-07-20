@@ -82,7 +82,7 @@ func TestRecursiveConsistency(t *testing.T) {
 		assert.True(t, testutils.Exists(filepath.Join(baseRestoreDir, relLocation, cmd.Current)))
 	}
 
-	flag, err := DoRecursiveConsistency(baseDataDir, baseRestoreDir)
+	flag, err := DoRecursiveConsistency(baseDataDir, baseRestoreDir, 5)
 	assert.NoError(t, err)
 	assert.Equal(t, flag, 0, "flag should be equal to 0")
 }
