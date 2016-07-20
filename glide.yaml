@@ -15,3 +15,5 @@ import:
   subpackages:
   - http2
 - package: github.com/dustin/go-humanize
+- package: github.com/op/go-logging
+  version: v1

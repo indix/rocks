@@ -1,5 +1,5 @@
-hash: 3c1ba01dcdc5cc0c6abc26d1d84891cfd01014fcdfff2417d2bf5f3e8ace13d5
-updated: 2016-07-20T13:53:13.430588894+05:30
+hash: 4b5168b6eb3d6fa8005f0a4254c98c07f47b69dc68d9844a4b0898013c9e0933
+updated: 2016-07-21T00:23:30.680692836+05:30
 imports:
 - name: github.com/ashwanthkumar/golang-utils
   version: ca70cd2b7edf2c1e819bbb0299a4e158f173d1cc
@@ -25,6 +25,8 @@ imports:
   version: d30f09973e19c1dfcd120b2d9c4f168e68d6b5d5
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/op/go-logging
+  version: b2cb9fa56473e98db8caba80237377e83fe44db5
 - name: github.com/pmezard/go-difflib
   version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
   subpackages:
