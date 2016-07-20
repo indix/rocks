@@ -1,5 +1,5 @@
-hash: 6969d00f86ab3e3f800eedf087bb217ef22e803b5e89955f41a14614778ad1be
-updated: 2016-07-18T01:30:54.363967248+05:30
+hash: 3c1ba01dcdc5cc0c6abc26d1d84891cfd01014fcdfff2417d2bf5f3e8ace13d5
+updated: 2016-07-20T13:53:13.430588894+05:30
 imports:
 - name: github.com/ashwanthkumar/golang-utils
   version: ca70cd2b7edf2c1e819bbb0299a4e158f173d1cc
@@ -48,8 +48,4 @@ imports:
   - http2
   - http2/hpack
   - lex/httplex
-testImports:
-- name: github.com/ind9/rocks
-  version: f61471a856563ce1458ddbd124846b308151c4cd
-  subpackages:
-  - cmd/test-utils
+testImports: []

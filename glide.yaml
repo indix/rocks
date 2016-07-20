@@ -1,6 +1,8 @@
 package: github.com/ind9/rocks
 import:
 - package: github.com/ashwanthkumar/golang-utils
+  subpackages:
+  - worker
 - package: github.com/stretchr/testify
   subpackages:
   - mock
