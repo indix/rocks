@@ -1,4 +1,4 @@
-package ops
+package compact
 
 import (
 	"fmt"
@@ -7,8 +7,9 @@ import (
 	"runtime"
 
 	log "github.com/Sirupsen/logrus"
-
+	"github.com/ashwanthkumar/golang-utils/worker"
 	"github.com/hashicorp/go-multierror"
+	"github.com/ind9/rocks/cmd"
 	"github.com/spf13/cobra"
 	"github.com/tecbot/gorocksdb"
 )
@@ -16,12 +17,18 @@ import (
 var compactionSource string
 var compactionThreads int
 var keys gorocksdb.Range
+var recursive bool
+
+// Work struct contains source and destination for backup
+type Work struct {
+	Source string
+}
 
 var compact = &cobra.Command{
 	Use:   "compact",
 	Short: "Does a compaction on rocksdb stores",
 	Long:  "Does a compaction on rocksdb stores",
-	Run:   AttachHandler(compactDatabase),
+	Run:   cmd.AttachHandler(compactDatabase),
 }
 
 func compactDatabase(args []string) error {
@@ -39,20 +46,20 @@ func compactDatabase(args []string) error {
 // DoRecursiveCompaction recursively compacts a rocksdb store keeping the folder structure intact as in source
 func DoRecursiveCompaction(source string, threads int) error {
 
-	workerPool := WorkerPool{
+	workerPool := worker.Pool{
 		MaxWorkers: threads,
-		Op: func(request WorkRequest) error {
-			work := request.(CompactionWork)
+		Op: func(request worker.Request) error {
+			work := request.(Work)
 			return DoCompaction(work.Source)
 		},
 	}
 	workerPool.Initialize()
 
 	err := filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
-		if info.Name() == Current {
+		if info.Name() == cmd.Current {
 			dbLoc := filepath.Dir(path)
 
-			work := CompactionWork{
+			work := Work{
 				Source: dbLoc,
 			}
 			workerPool.AddWork(work)
@@ -93,7 +100,7 @@ func DoCompaction(source string) error {
 }
 
 func init() {
-	Rocks.AddCommand(compact)
+	cmd.Rocks.AddCommand(compact)
 
 	compact.PersistentFlags().StringVar(&compactionSource, "src", "", "Compact for the source rocksdb store")
 	compact.PersistentFlags().BoolVar(&recursive, "recursive", false, "Trying to compact in recursive fashion for src")

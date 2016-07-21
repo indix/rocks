@@ -1,4 +1,4 @@
-package ops
+package statistics
 
 import (
 	"io/ioutil"
@@ -6,20 +6,21 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/ind9/rocks/cmd/testutils"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCompact(t *testing.T) {
+func TestStatistics(t *testing.T) {
 	dataDir, err := ioutil.TempDir("", "ind9-rocks")
 	defer os.RemoveAll(dataDir)
 	assert.NoError(t, err)
-
-	WriteTestDB(t, dataDir)
-	err = DoCompaction(dataDir)
+	testutils.WriteTestDB(t, dataDir)
+	count, err := DoStats(dataDir)
 	assert.NoError(t, err)
+	assert.Equal(t, int64(2), count)
 }
 
-func TestRecursiveCompaction(t *testing.T) {
+func TestRecursiveStatistics(t *testing.T) {
 	baseDataDir, err := ioutil.TempDir("", "baseDataDir")
 	err = os.MkdirAll(baseDataDir, os.ModePerm)
 	defer os.RemoveAll(baseDataDir)
@@ -33,9 +34,10 @@ func TestRecursiveCompaction(t *testing.T) {
 	}
 
 	for _, relLocation := range paths {
-		WriteTestDB(t, filepath.Join(baseDataDir, relLocation))
+		testutils.WriteTestDB(t, filepath.Join(baseDataDir, relLocation))
 	}
 
-	err = DoRecursiveCompaction(baseDataDir, 1)
+	count, err := DoRecursiveStats(baseDataDir, 3)
 	assert.NoError(t, err)
+	assert.Equal(t, int64(8), count)
 }

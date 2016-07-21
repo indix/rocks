@@ -1,4 +1,4 @@
-package ops
+package testutils
 
 import (
 	"os"
@@ -8,6 +8,7 @@ import (
 	"github.com/tecbot/gorocksdb"
 )
 
+// Exists function checks for existence of a file/directory
 func Exists(name string) bool {
 	if _, err := os.Stat(name); err != nil {
 		if os.IsNotExist(err) {
@@ -17,6 +18,7 @@ func Exists(name string) bool {
 	return true
 }
 
+// OpenDB creates a dummy rocksdb store
 func OpenDB(t *testing.T, dir string) *gorocksdb.DB {
 	opts := gorocksdb.NewDefaultOptions()
 	opts.SetCreateIfMissing(true)
@@ -25,6 +27,7 @@ func OpenDB(t *testing.T, dir string) *gorocksdb.DB {
 	return db
 }
 
+// WriteTestDB writes dummy data into a rocksdb store
 func WriteTestDB(t *testing.T, dir string) {
 	// create directory even if the file is not present
 	err := os.MkdirAll(dir, os.ModePerm)

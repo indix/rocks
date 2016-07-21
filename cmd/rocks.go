@@ -1,4 +1,4 @@
-package ops
+package cmd
 
 import (
 	"fmt"
@@ -7,9 +7,16 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/ind9/rocks/cmd/testutils"
 
 	"github.com/spf13/cobra"
 )
+
+// Current is to identify a rocksdb store.
+const Current = "CURRENT"
+
+// LatestBackup is used to find the backup location
+const LatestBackup = "LATEST_BACKUP"
 
 var logDestination string // generally same as current working directory
 
@@ -36,8 +43,8 @@ func createLogs() error {
 		logDestination, err = os.Getwd()
 	}
 
-	if !Exists(logDestination) {
-		err = os.MkdirAll(logDestination, os.ModePerm)
+	if !testutils.Exists(logDestination) {
+		os.MkdirAll(logDestination, os.ModePerm)
 	}
 
 	var pathForLog = filepath.Join(logDestination, "rocks_"+time.Now().Format(time.RFC850)+".log")

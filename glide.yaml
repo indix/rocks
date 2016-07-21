@@ -1,5 +1,8 @@
 package: github.com/ind9/rocks
 import:
+- package: github.com/ashwanthkumar/golang-utils
+  subpackages:
+  - worker
 - package: github.com/stretchr/testify
   subpackages:
   - mock
@@ -12,5 +15,7 @@ import:
   subpackages:
   - http2
 - package: github.com/dustin/go-humanize
+- package: github.com/op/go-logging
+  version: v1
 - package: github.com/Sirupsen/logrus
   version: v0.10.0
