@@ -1,6 +1,9 @@
-package ops
+package trigger
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/ind9/rocks/cmd"
+	"github.com/spf13/cobra"
+)
 
 var trigger = &cobra.Command{
 	Use:   "trigger",
@@ -9,5 +12,5 @@ var trigger = &cobra.Command{
 }
 
 func init() {
-	Rocks.AddCommand(trigger)
+	cmd.Rocks.AddCommand(trigger)
 }

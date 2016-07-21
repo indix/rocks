@@ -1,4 +1,4 @@
-package ops
+package backup
 
 import (
 	"fmt"
@@ -7,7 +7,9 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/ashwanthkumar/golang-utils/worker"
 	"github.com/hashicorp/go-multierror"
+	"github.com/ind9/rocks/cmd"
 	"github.com/spf13/cobra"
 	"github.com/tecbot/gorocksdb"
 )
@@ -15,15 +17,19 @@ import (
 var backupSource string
 var backupDestination string
 var backupThreads int
-
-// Current is to identify a rocksdb store.
-const Current = "CURRENT"
+var recursive bool
 
 var backup = &cobra.Command{
 	Use:   "backup",
 	Short: "Backs up rocksdb stores",
 	Long:  "Backs up rocksdb stores",
-	Run:   AttachHandler(backupDatabase),
+	Run:   cmd.AttachHandler(backupDatabase),
+}
+
+// Work struct contains source and destination for backup
+type Work struct {
+	Source      string
+	Destination string
 }
 
 func backupDatabase(args []string) error {
@@ -42,17 +48,17 @@ func backupDatabase(args []string) error {
 // DoRecursiveBackup recursively takes a rocksdb backup keeping the folder structure intact as in source
 func DoRecursiveBackup(source, destination string, threads int) error {
 
-	workerPool := WorkerPool{
+	workerPool := worker.Pool{
 		MaxWorkers: threads,
-		Op: func(request WorkRequest) error {
-			work := request.(BackupWork)
+		Op: func(request worker.Request) error {
+			work := request.(Work)
 			return DoBackup(work.Source, work.Destination)
 		},
 	}
 	workerPool.Initialize()
 
 	err := filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
-		if info.Name() == Current {
+		if info.Name() == cmd.Current {
 			dbLoc := filepath.Dir(path)
 
 			dbRelative, err := filepath.Rel(source, dbLoc)
@@ -67,7 +73,7 @@ func DoRecursiveBackup(source, destination string, threads int) error {
 				return err
 			}
 
-			work := BackupWork{
+			work := Work{
 				Source:      dbLoc,
 				Destination: dbBackupLoc,
 			}
@@ -111,7 +117,7 @@ func DoBackup(source, destination string) error {
 }
 
 func init() {
-	Rocks.AddCommand(backup)
+	cmd.Rocks.AddCommand(backup)
 
 	backup.PersistentFlags().StringVar(&backupSource, "src", "", "Backup from")
 	backup.PersistentFlags().StringVar(&backupDestination, "dest", "", "Backup to")

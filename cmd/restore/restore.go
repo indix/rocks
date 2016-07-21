@@ -1,4 +1,4 @@
-package ops
+package restore
 
 import (
 	"fmt"
@@ -7,7 +7,9 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/ashwanthkumar/golang-utils/worker"
 	"github.com/hashicorp/go-multierror"
+	"github.com/ind9/rocks/cmd"
 	"github.com/spf13/cobra"
 	"github.com/tecbot/gorocksdb"
 )
@@ -19,14 +21,18 @@ var recursive bool
 var keepLogFiles bool
 var restoreThreads int
 
-// LatestBackup is used to find the backup location
-const LatestBackup = "LATEST_BACKUP"
-
 var restore = &cobra.Command{
 	Use:   "restore",
 	Short: "Restore backed up rocksdb files",
 	Long:  "Restore backed up rocksdb files",
-	Run:   AttachHandler(restoreDatabase),
+	Run:   cmd.AttachHandler(restoreDatabase),
+}
+
+// Work struct contains source and destination for restore
+type Work struct {
+	Source      string
+	Destination string
+	WalDir      string
 }
 
 func restoreDatabase(args []string) error {
@@ -49,17 +55,17 @@ func restoreDatabase(args []string) error {
 
 // DoRecursiveRestore recursively restores a rocksdb keeping the folder structure intact from backup to restore location
 func DoRecursiveRestore(source, destination, walDestinationDir string, numThreads int, keepLogFiles bool) error {
-	workerPool := WorkerPool{
+	workerPool := worker.Pool{
 		MaxWorkers: restoreThreads,
-		Op: func(request WorkRequest) error {
-			work := request.(RestoreWork)
+		Op: func(request worker.Request) error {
+			work := request.(Work)
 			return DoRestore(work.Source, work.Destination, work.WalDir, keepLogFiles)
 		},
 	}
 	workerPool.Initialize()
 
 	err := filepath.Walk(source, func(path string, info os.FileInfo, walkErr error) error {
-		if info.Name() == LatestBackup {
+		if info.Name() == cmd.LatestBackup {
 			dbLoc := filepath.Dir(path)
 			dbRelative, err := filepath.Rel(source, dbLoc)
 			if err != nil {
@@ -80,7 +86,7 @@ func DoRecursiveRestore(source, destination, walDestinationDir string, numThread
 				return err
 			}
 
-			work := RestoreWork{
+			work := Work{
 				Source:      dbLoc,
 				Destination: dbRestoreLoc,
 				WalDir:      walRestoreLoc,
@@ -125,7 +131,7 @@ func DoRestore(source, destination, walDestinationDir string, keepLogFiles bool)
 }
 
 func init() {
-	Rocks.AddCommand(restore)
+	cmd.Rocks.AddCommand(restore)
 
 	restore.PersistentFlags().StringVar(&restoreSource, "src", "", "Restore from")
 	restore.PersistentFlags().StringVar(&restoreDestination, "dest", "", "Restore to")
