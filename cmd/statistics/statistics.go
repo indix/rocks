@@ -2,11 +2,12 @@ package statistics
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 	"sync"
+
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/ashwanthkumar/golang-utils/worker"
 	"github.com/hashicorp/go-multierror"

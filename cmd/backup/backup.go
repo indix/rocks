@@ -2,10 +2,11 @@ package backup
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/ashwanthkumar/golang-utils/worker"
 	"github.com/hashicorp/go-multierror"
