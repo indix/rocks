@@ -99,15 +99,18 @@ Flags:
 
 ### Consistency
 ```
-Checks for the consistency between rocks store and it's corresponding restore
+$ rocks consistency --help
+Checks for the consistency between rocks store and it's corresponding restore using row counts
 
 Usage:
   rocks consistency [flags]
 
 Flags:
-      --src string    Rocks store location
-      --dest string   Restore location for Rocks store
-      --recursive     Trying to check consistency between rocks store and and it's restore
+      --paranoid             Do paranoid checks on the DB
+      --recursive            Recursively check for row counts across dbs
+      --restore-dir string   Restore location for Rocks store
+      --src-dir string       Rocks store location
+      --threads int          Number of threads to do backup (default 8)
 ```
 
 ## License
