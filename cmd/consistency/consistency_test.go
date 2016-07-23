@@ -38,6 +38,7 @@ func TestConsitency(t *testing.T) {
 
 	result := DoConsistency(dataDir, restoreDir, true)
 	assert.NoError(t, result.Err)
+	assert.True(t, result.IsConsistent())
 }
 
 func TestRecursiveConsistency(t *testing.T) {
@@ -70,18 +71,10 @@ func TestRecursiveConsistency(t *testing.T) {
 		testutils.WriteTestDB(t, filepath.Join(baseDataDir, relLocation))
 	}
 
-	// recursive backup + assert it
 	err = backup.DoRecursiveBackup(baseDataDir, baseBackupDir, 1)
 	assert.NoError(t, err)
-	for _, relLocation := range paths {
-		assert.True(t, testutils.Exists(filepath.Join(baseBackupDir, relLocation, cmd.LatestBackup)))
-	}
-
 	err = restore.DoRecursiveRestore(baseBackupDir, baseRestoreDir, baseRestoreDir, 5, true)
 	assert.NoError(t, err)
-	for _, relLocation := range paths {
-		assert.True(t, testutils.Exists(filepath.Join(baseRestoreDir, relLocation, cmd.Current)))
-	}
 
 	err = DoRecursiveConsistency(baseDataDir, baseRestoreDir, 5)
 	assert.NoError(t, err)
