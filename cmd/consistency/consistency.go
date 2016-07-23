@@ -14,9 +14,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var consistencySource string
-var consistencyRestore string
-var consistencyThreads int
+var source string
+var restoredLoc string
+var threads int
 var recursive bool
 
 // Work struct contains Source and Restore locations for checking consistency
@@ -33,18 +33,18 @@ var consistency = &cobra.Command{
 }
 
 func checkConsistency(args []string) (err error) {
-	if consistencySource == "" {
+	if source == "" {
 		return fmt.Errorf("--src was not set")
 	}
 
-	if consistencyRestore == "" {
+	if restoredLoc == "" {
 		return fmt.Errorf("--dest was not set")
 	}
 
 	if recursive {
-		return DoRecursiveConsistency(consistencySource, consistencyRestore, consistencyThreads)
+		return DoRecursiveConsistency(source, restoredLoc, threads)
 	}
-	return DoConsistency(consistencySource, consistencyRestore)
+	return DoConsistency(source, restoredLoc)
 }
 
 // DoRecursiveConsistency checks for consistency recursively
@@ -119,8 +119,8 @@ func DoConsistency(source, restore string) error {
 func init() {
 	cmd.Rocks.AddCommand(consistency)
 
-	consistency.PersistentFlags().StringVar(&consistencySource, "src", "", "Rocks store location")
-	consistency.PersistentFlags().StringVar(&consistencyRestore, "dest", "", "Restore location for Rocks store")
-	consistency.PersistentFlags().BoolVar(&recursive, "recursive", false, "Trying to check consistency between rocks store and and it's restore")
-	consistency.PersistentFlags().IntVar(&consistencyThreads, "threads", 2*runtime.NumCPU(), "Number of threads to do backup")
+	consistency.PersistentFlags().StringVar(&source, "src", "", "Rocks store location")
+	consistency.PersistentFlags().StringVar(&restoredLoc, "dest", "", "Restore location for Rocks store")
+	consistency.PersistentFlags().BoolVar(&recursive, "recursive", false, "Recursively check for row counts across dbs")
+	consistency.PersistentFlags().IntVar(&threads, "threads", 2*runtime.NumCPU(), "Number of threads to do backup")
 }
