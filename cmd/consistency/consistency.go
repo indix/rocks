@@ -12,17 +12,45 @@ import (
 	"github.com/ind9/rocks/cmd"
 	"github.com/ind9/rocks/cmd/statistics"
 	"github.com/spf13/cobra"
+	"github.com/tecbot/gorocksdb"
 )
 
 var source string
 var restoredLoc string
 var threads int
 var recursive bool
+var paranoid bool
 
 // Work struct contains Source and Restore locations for checking consistency
 type Work struct {
-	Source  string
-	Restore string
+	Source   string
+	Restore  string
+	Paranoid bool
+}
+
+// Result of DoConsistency
+type Result struct {
+	SourceDir     string
+	RestoredDir   string
+	Err           error
+	SourceCount   int64
+	RestoredCount int64
+}
+
+// ToString representation of the Result
+func (result *Result) String() string {
+	consistent := "FAIL"
+	if result.IsConsistent() {
+		consistent = "PASS"
+	}
+	return fmt.Sprintf(`Consistency Result = %s
+SourceDir: %s RestoreDir: %s
+Store Count: %d Restore Count: %d`, consistent, result.SourceDir, result.RestoredDir, result.SourceCount, result.RestoredCount)
+}
+
+// IsConsistent checks if the result is consistent
+func (result *Result) IsConsistent() bool {
+	return result.SourceCount == result.RestoredCount
 }
 
 var consistency = &cobra.Command{
@@ -44,18 +72,22 @@ func checkConsistency(args []string) (err error) {
 	if recursive {
 		return DoRecursiveConsistency(source, restoredLoc, threads)
 	}
-	return DoConsistency(source, restoredLoc)
+	result := DoConsistency(source, restoredLoc, paranoid)
+	log.Println(result.String())
+	return result.Err
 }
 
 // DoRecursiveConsistency checks for consistency recursively
 func DoRecursiveConsistency(source, restore string, threads int) error {
-	log.Printf("Initializing consistency check between %s data directory and %s as it's restore directory\n", source, restore)
+	log.Printf("Initializing consistency check between %s as data directory and %s as it's restore directory\n", source, restore)
 
 	workerPool := worker.Pool{
 		MaxWorkers: threads,
 		Op: func(request worker.Request) error {
 			work := request.(Work)
-			return DoConsistency(work.Source, work.Restore)
+			result := DoConsistency(work.Source, work.Restore, work.Paranoid)
+			log.Println(result.String())
+			return result.Err
 		},
 	}
 	workerPool.Initialize()
@@ -70,8 +102,9 @@ func DoRecursiveConsistency(source, restore string, threads int) error {
 			restoreDbLoc := filepath.Join(restore, sourceDbRelative)
 
 			work := Work{
-				Source:  sourceDbLoc,
-				Restore: restoreDbLoc,
+				Source:   sourceDbLoc,
+				Restore:  restoreDbLoc,
+				Paranoid: paranoid,
 			}
 			workerPool.AddWork(work)
 			return filepath.SkipDir
@@ -92,28 +125,33 @@ func DoRecursiveConsistency(source, restore string, threads int) error {
 }
 
 // DoConsistency checks for consistency between rocks source store and its restore
-func DoConsistency(source, restore string) error {
-	var rowCountSource, rowCountRestore int64
-
-	rowCountSource, err := statistics.DoStats(source)
-	rowCountRestore, err = statistics.DoStats(restore)
-
-	if rowCountSource != rowCountRestore {
-		log.Printf("Source : %s Restore : %s", source, restore)
-		log.Printf("Store Count : %v\n", rowCountSource)
-		log.Printf("Restore Count : %v\n", rowCountRestore)
-		log.Printf("STATUS : FAIL")
-	} else {
-		log.Printf("Source : %s Restore : %s", source, restore)
-		log.Printf("Store Count : %v\n", rowCountSource)
-		log.Printf("Restore Count : %v\n", rowCountRestore)
-		log.Printf("STATUS : PASS")
-	}
+func DoConsistency(source, restore string, paranoid bool) Result {
+	sourceOpts := gorocksdb.NewDefaultOptions()
+	sourceOpts.SetParanoidChecks(paranoid)
+	sourceDb, err := gorocksdb.OpenDb(sourceOpts, source)
 	if err != nil {
-		return err
+		return Result{source, restore, err, 0, 0}
+	}
+	defer sourceDb.Close()
+
+	restoreOpts := gorocksdb.NewDefaultOptions()
+	restoreOpts.SetParanoidChecks(paranoid)
+	restoredDb, err := gorocksdb.OpenDb(restoreOpts, restore)
+	if err != nil {
+		return Result{source, restore, err, 0, 0}
+	}
+	defer restoredDb.Close()
+
+	sourceRowCount, err := statistics.DoStatsWithDB(sourceDb)
+	if err != nil {
+		return Result{source, restore, err, sourceRowCount, 0}
+	}
+	restoredRowCount, err := statistics.DoStatsWithDB(restoredDb)
+	if err != nil {
+		return Result{source, restore, err, sourceRowCount, restoredRowCount}
 	}
 
-	return nil
+	return Result{source, restore, err, sourceRowCount, restoredRowCount}
 }
 
 func init() {
@@ -122,5 +160,6 @@ func init() {
 	consistency.PersistentFlags().StringVar(&source, "src", "", "Rocks store location")
 	consistency.PersistentFlags().StringVar(&restoredLoc, "dest", "", "Restore location for Rocks store")
 	consistency.PersistentFlags().BoolVar(&recursive, "recursive", false, "Recursively check for row counts across dbs")
+	consistency.PersistentFlags().BoolVar(&paranoid, "paranoid", false, "Do paranoid checks on the DB")
 	consistency.PersistentFlags().IntVar(&threads, "threads", 2*runtime.NumCPU(), "Number of threads to do backup")
 }

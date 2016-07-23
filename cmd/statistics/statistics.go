@@ -98,6 +98,27 @@ func DoRecursiveStats(source string, threads int) (int64, error) {
 	return totalRecordsCount, result
 }
 
+// DoStatsWithDB generates statistics for the given db instance
+func DoStatsWithDB(db *gorocksdb.DB) (int64, error) {
+	statsOpts := gorocksdb.NewDefaultReadOptions()
+	statsOpts.SetFillCache(false)
+	iterator := db.NewIterator(statsOpts)
+
+	var rowCount int64
+
+	for iterator.SeekToFirst(); iterator.Valid(); iterator.Next() {
+		rowCount++
+	}
+
+	if err := iterator.Err(); err != nil {
+		iterator.Close()
+		return rowCount, err
+	}
+	iterator.Close()
+
+	return rowCount, nil
+}
+
 // DoStats generates statistics for the source
 func DoStats(source string) (int64, error) {
 	log.Printf("Trying to generate statistics for %s\n", source)
@@ -109,23 +130,7 @@ func DoStats(source string) (int64, error) {
 	}
 	defer db.Close()
 
-	statsOpts := gorocksdb.NewDefaultReadOptions()
-	statsOpts.SetFillCache(false)
-	iterator := db.NewIterator(statsOpts)
-
-	var rowCount int64
-
-	for iterator.SeekToFirst(); iterator.Valid(); iterator.Next() {
-		rowCount++
-	}
-
-	if err = iterator.Err(); err != nil {
-		iterator.Close()
-		return rowCount, err
-	}
-	iterator.Close()
-
-	return rowCount, nil
+	return DoStatsWithDB(db)
 }
 
 func init() {
