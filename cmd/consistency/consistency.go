@@ -55,18 +55,18 @@ func (result *Result) IsConsistent() bool {
 
 var consistency = &cobra.Command{
 	Use:   "consistency",
-	Short: "Checks for consistency between rocks store and it's corresponding restore",
-	Long:  "Checks for the consistency between rocks store and it's corresponding restore",
+	Short: "Checks for the consistency between rocks store and it's corresponding restore using row counts",
+	Long:  "Checks for the consistency between rocks store and it's corresponding restore using row counts",
 	Run:   cmd.AttachHandler(checkConsistency),
 }
 
 func checkConsistency(args []string) (err error) {
 	if source == "" {
-		return fmt.Errorf("--src was not set")
+		return fmt.Errorf("--src-dir was not set")
 	}
 
 	if restoredLoc == "" {
-		return fmt.Errorf("--dest was not set")
+		return fmt.Errorf("--restore-dir was not set")
 	}
 
 	if recursive {
@@ -157,8 +157,8 @@ func DoConsistency(source, restore string, paranoid bool) Result {
 func init() {
 	cmd.Rocks.AddCommand(consistency)
 
-	consistency.PersistentFlags().StringVar(&source, "src", "", "Rocks store location")
-	consistency.PersistentFlags().StringVar(&restoredLoc, "dest", "", "Restore location for Rocks store")
+	consistency.PersistentFlags().StringVar(&source, "src-dir", "", "Original data location")
+	consistency.PersistentFlags().StringVar(&restoredLoc, "restore-dir", "", "Restored location")
 	consistency.PersistentFlags().BoolVar(&recursive, "recursive", false, "Recursively check for row counts across dbs")
 	consistency.PersistentFlags().BoolVar(&paranoid, "paranoid", false, "Do paranoid checks on the DB")
 	consistency.PersistentFlags().IntVar(&threads, "threads", 2*runtime.NumCPU(), "Number of threads to do backup")
