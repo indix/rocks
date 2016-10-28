@@ -10,6 +10,7 @@ import:
 - package: github.com/spf13/cobra
 - package: github.com/vektra/mockery
 - package: github.com/tecbot/gorocksdb
+  version: 59ab8def01399fb7ded1c3bff5e3e4cbd14b6348
 - package: github.com/hashicorp/go-multierror
 - package: golang.org/x/net
   subpackages:
@@ -17,3 +18,5 @@ import:
 - package: github.com/dustin/go-humanize
 - package: github.com/op/go-logging
   version: v1
+- package: github.com/satori/go.uuid
+  version: ^1.1.0

@@ -33,6 +33,7 @@ test:
 	go test -v github.com/ind9/rocks/cmd
 	go test -v github.com/ind9/rocks/cmd/backup
 	go test -v github.com/ind9/rocks/cmd/restore
+	go test -v github.com/ind9/rocks/cmd/repair
 	go test -v github.com/ind9/rocks/cmd/statistics
 	go test -v github.com/ind9/rocks/cmd/consistency
 	go test -v github.com/ind9/rocks/cmd/compact
