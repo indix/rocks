@@ -6,6 +6,7 @@ import (
 
 	"github.com/ind9/rocks/cmd"
 	_ "github.com/ind9/rocks/cmd/backup"
+	_ "github.com/ind9/rocks/cmd/compact"
 	_ "github.com/ind9/rocks/cmd/consistency"
 	_ "github.com/ind9/rocks/cmd/restore"
 	_ "github.com/ind9/rocks/cmd/statistics"
